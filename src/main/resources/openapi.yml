@@ -1,0 +1,139 @@
+openapi: 3.0.0
+info:
+  title: Account Service API
+  version: 1.0.0
+  description: API for managing bank accounts
+
+servers:
+  - url: http://localhost/api/v1
+
+paths:
+  /accounts:
+    post:
+      operationId: createAccount
+      summary: Create new account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequest'
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '400':
+          description: Invalid input data
+        '500':
+          description: Internal server error
+
+  /accounts/{id}:
+    get:
+      operationId: getAccount
+      summary: Get account by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '404':
+          description: Account not found
+        '500':
+          description: Internal server error
+
+  /accounts/customer/{customerId}:
+    get:
+      operationId: getAccountsByCustomer
+      summary: Get accounts by customer ID
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Accounts found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AccountResponse'
+        '404':
+          description: No accounts found
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    AccountRequest:
+      type: object
+      properties:
+        accountType:
+          type: string
+        customerId:
+          type: string
+        initialBalance:
+          type: number
+          format: double
+      required:
+        - accountType
+        - customerId
+        - initialBalance
+
+    AccountResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        accountNumber:
+          type: string
+        accountType:
+          type: string
+        balance:
+          type: number
+          format: double
+        customerId:
+          type: string
+        creationDate:
+          type: string
+          format: date-time
+        status:
+          type: string
+        monthlyMovements:
+          type: integer
+        maintenanceFee:
+          type: number
+          format: double
+
+    CustomerResponse: # customer-service
+      type: object
+      properties:
+        id:
+          type: string
+        documentNumber:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        type:
+          type: string
+
+    ResponseBase: # customer-service
+      type: object
+      properties:
+        message:
+          type: string
