@@ -1,13 +1,14 @@
 package com.project1.ms_account_service.business;
 
+import com.project1.ms_account_service.exception.AccountCreationException;
+import com.project1.ms_account_service.exception.InvalidAccountTypeException;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
-import com.project1.ms_account_service.model.CustomerResponse;
+import com.project1.ms_account_service.model.entity.AccountType;
 import com.project1.ms_account_service.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -26,10 +27,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Mono<AccountResponse> createAccount(Mono<AccountRequest> request) {
         return request
-                .flatMap(req ->
-                        customerService.getCustomerById(req.getCustomerId())
-                                .then(Mono.just(req))
-                ).map(accountMapper::getAccountCreationEntity)
+                .flatMap(this::validateAccountType)
+                .flatMap(this::validateCustomerAccountLimits)
+                .map(accountMapper::getAccountCreationEntity)
                 .flatMap(accountRepository::save)
                 .map(accountMapper::getAccountResponse)
                 .doOnSuccess(a -> log.info("Account created successfully with id: {}", a.getId()))
@@ -50,5 +50,60 @@ public class AccountServiceImpl implements AccountService {
                 .map(accountMapper::getAccountResponse)
                 .doOnComplete(() -> log.info("Completed fetching accounts for customer: {}", customerId))
                 .doOnError(e -> log.error("Error fetching customer accounts", e));
+    }
+
+    private Mono<AccountRequest> validateAccountType(AccountRequest request) {
+        if (!isValidAccountType(request.getAccountType())) {
+            return Mono.error(new InvalidAccountTypeException("Invalid account type"));
+        }
+        return Mono.just(request);
+    }
+
+    private Mono<AccountRequest> validateCustomerAccountLimits(AccountRequest request) {
+        return customerService.getCustomerById(request.getCustomerId())
+                .flatMap(customer -> {
+                    if ("PERSONAL".equals(customer.getType())) {
+                        return validatePersonalCustomerAccounts(request);
+                    }
+                    if ("BUSINESS".equals(customer.getType())) {
+                        return validateBusinessCustomerAccounts(request);
+                    }
+                    return Mono.just(request);
+                });
+    }
+
+    private Mono<AccountRequest> validateBusinessCustomerAccounts(AccountRequest request) {
+        AccountType accountType = AccountType.valueOf(request.getAccountType());
+        if (accountType.equals(AccountType.SAVINGS) || accountType.equals(AccountType.FIXED_TERM)) {
+            return Mono.error(new AccountCreationException("Business customers cannot have "+ accountType + " account"));
+        }
+        return Mono.just(request);
+    }
+
+    private Mono<AccountRequest> validatePersonalCustomerAccounts(AccountRequest request) {
+        return accountRepository.findByCustomerId(request.getCustomerId())
+                .collectList()
+                .flatMap(accounts -> {
+                    AccountType accountType = AccountType.valueOf(request.getAccountType());
+                    long accountTypeCount = accounts.stream()
+                            .filter(acc -> acc.getAccountType().equals(accountType))
+                            .count();
+                    if (accountType.equals(AccountType.SAVINGS) && accountTypeCount > 0) {
+                        return Mono.error(new AccountCreationException("Personal customers can only have one savings account"));
+                    }
+                    if (accountType.equals(AccountType.CHECKING) && accountTypeCount > 0) {
+                        return Mono.error(new AccountCreationException("Personal customers can only have one checking account"));
+                    }
+                    return Mono.just(request);
+                });
+    }
+
+    private boolean isValidAccountType(String accountType) {
+        try {
+            AccountType.valueOf(accountType);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 }

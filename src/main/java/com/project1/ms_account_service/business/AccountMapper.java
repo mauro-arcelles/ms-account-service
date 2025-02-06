@@ -1,8 +1,10 @@
 package com.project1.ms_account_service.business;
 
+import com.project1.ms_account_service.exception.InvalidAccountTypeException;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
 import com.project1.ms_account_service.model.entity.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -11,21 +13,38 @@ import java.util.UUID;
 
 @Component
 public class AccountMapper {
+    @Value("${account.config.checking.maintenanceFee}")
+    private Double maintenanceFee;
+
+    @Value("${account.config.fixedterm.maxMonthlyMovements}")
+    private Integer fixedTermMaxMonthlyMovements;
+
+    @Value("${account.config.savings.maxMonthlyMovements}")
+    private Integer savingsMaxMonthlyMovements;
+
     public Account getAccountCreationEntity(AccountRequest request) {
         Account account;
         AccountType accountType = AccountType.valueOf(request.getAccountType());
         switch (accountType) {
             case SAVINGS:
-                account = new SavingsAccount();
+                SavingsAccount savingsAccount = new SavingsAccount();
+                savingsAccount.setMaxMonthlyMovements(savingsMaxMonthlyMovements);
+                account = savingsAccount;
+                account.setMaintenanceFee(0.0);
                 break;
             case CHECKING:
-                account = new CheckingAccount();
+                CheckingAccount checkingAccount = new CheckingAccount();
+                account = checkingAccount;
+                account.setMaintenanceFee(maintenanceFee);
                 break;
             case FIXED_TERM:
-                account = new FixedTermAccount();
+                FixedTermAccount fixedTermAccount = new FixedTermAccount();
+                fixedTermAccount.setMaxMonthlyMovements(fixedTermMaxMonthlyMovements);
+                account = fixedTermAccount;
+                account.setMaintenanceFee(0.0);
                 break;
             default:
-                throw new IllegalArgumentException("Invalid account type");
+                throw new InvalidAccountTypeException("Invalid account type");
         }
 
         account.setAccountType(AccountType.valueOf(request.getAccountType()));
@@ -40,6 +59,7 @@ public class AccountMapper {
 
     public AccountResponse getAccountResponse(Account account) {
         AccountResponse accountResponse = new AccountResponse();
+        accountResponse.setId(account.getId());
         accountResponse.setAccountNumber(account.getAccountNumber());
         accountResponse.setAccountType(account.getAccountType().toString());
         accountResponse.setBalance(account.getBalance());
