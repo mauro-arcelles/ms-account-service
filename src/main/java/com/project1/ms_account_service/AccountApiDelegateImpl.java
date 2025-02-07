@@ -2,6 +2,7 @@ package com.project1.ms_account_service;
 
 import com.project1.ms_account_service.api.AccountsApiDelegate;
 import com.project1.ms_account_service.business.AccountService;
+import com.project1.ms_account_service.model.AccountBalanceResponse;
 import com.project1.ms_account_service.model.AccountPatchRequest;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
@@ -41,6 +42,12 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     @Override
     public Mono<ResponseEntity<AccountResponse>> updateAccount(String id, Mono<AccountPatchRequest> accountPatchRequest, ServerWebExchange exchange) {
         return accountService.updateAccount(id, accountPatchRequest)
+                .map(ResponseEntity::ok);
+    }
+
+    @Override
+    public Mono<ResponseEntity<AccountBalanceResponse>> getAccountBalance(String accountNumber, ServerWebExchange exchange) {
+        return accountService.getAccountBalanceByAccountNumber(accountNumber)
                 .map(ResponseEntity::ok);
     }
 }

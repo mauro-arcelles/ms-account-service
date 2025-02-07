@@ -1,5 +1,6 @@
 package com.project1.ms_account_service.business;
 
+import com.project1.ms_account_service.model.AccountBalanceResponse;
 import com.project1.ms_account_service.model.AccountPatchRequest;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
@@ -11,4 +12,5 @@ public interface AccountService {
     Mono<AccountResponse> getAccountByAccountNumber(String accountNumber);
     Flux<AccountResponse> getAccountsByCustomerId(String customerId);
     Mono<AccountResponse> updateAccount(String id, Mono<AccountPatchRequest> request);
+    Mono<AccountBalanceResponse> getAccountBalanceByAccountNumber(String accountNumber);
 }

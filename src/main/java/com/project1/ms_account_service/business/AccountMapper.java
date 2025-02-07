@@ -2,6 +2,7 @@ package com.project1.ms_account_service.business;
 
 import com.project1.ms_account_service.exception.AccountCreationException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
+import com.project1.ms_account_service.model.AccountBalanceResponse;
 import com.project1.ms_account_service.model.AccountPatchRequest;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
@@ -110,6 +111,12 @@ public class AccountMapper {
             accountResponse.setAvailableDayForMovements(fixedTermAccount.getAvailableDayForMovements().atOffset(ZoneOffset.UTC));
         }
         return accountResponse;
+    }
+
+    public AccountBalanceResponse getAccountBalanceResponse(Account account) {
+        AccountBalanceResponse accountBalanceResponse = new AccountBalanceResponse();
+        accountBalanceResponse.setBalance(account.getBalance());
+        return accountBalanceResponse;
     }
 
     private String generateAccountNumber() {

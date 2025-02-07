@@ -106,6 +106,28 @@ paths:
         '500':
           description: Internal server error
 
+  /accounts/balance/{accountNumber}:
+    get:
+      operationId: getAccountBalance
+      summary: Get account balance by account number
+      parameters:
+        - name: accountNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Balance found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountBalanceResponse'
+        '404':
+          description: Account not found
+        '500':
+          description: Internal server error
+
 components:
   schemas:
     AccountRequest:
@@ -183,3 +205,9 @@ components:
       properties:
         message:
           type: string
+
+    AccountBalanceResponse:
+      type: object
+      properties:
+        balance:
+          type: number

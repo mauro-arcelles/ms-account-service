@@ -3,6 +3,7 @@ package com.project1.ms_account_service.business;
 import com.project1.ms_account_service.exception.AccountCreationException;
 import com.project1.ms_account_service.exception.AccountNotFoundException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
+import com.project1.ms_account_service.model.AccountBalanceResponse;
 import com.project1.ms_account_service.model.AccountPatchRequest;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
@@ -58,6 +59,13 @@ public class AccountServiceImpl implements AccountService {
                         .flatMap(accountRepository::save)
                         .map(accountMapper::getAccountResponse)
                 );
+    }
+
+    @Override
+    public Mono<AccountBalanceResponse> getAccountBalanceByAccountNumber(String accountNumber) {
+        return accountRepository.findByAccountNumber(accountNumber)
+                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account no found with account number: " + accountNumber)))
+                .map(accountMapper::getAccountBalanceResponse);
     }
 
     /**
