@@ -1,6 +1,8 @@
 package com.project1.ms_account_service.business;
 
+import com.project1.ms_account_service.exception.AccountCreationException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
+import com.project1.ms_account_service.model.AccountPatchRequest;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
 import com.project1.ms_account_service.model.entity.*;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -47,6 +50,7 @@ public class AccountMapper {
                 throw new InvalidAccountTypeException("Invalid account type");
         }
 
+        account.setMonthlyMovements(0);
         account.setAccountType(AccountType.valueOf(request.getAccountType()));
         account.setCustomerId(request.getCustomerId());
         account.setBalance(request.getInitialBalance());
@@ -55,6 +59,19 @@ public class AccountMapper {
         account.setAccountNumber(generateAccountNumber());
 
         return account;
+    }
+
+    public Account getAccountUpdateEntity(AccountPatchRequest request, Account existingAccount) {
+        if (request.getBalance() == null &&
+                request.getMonthlyMovements() == null &&
+                request.getStatus() == null) {
+            throw new AccountCreationException("At least one field must be provided");
+        }
+        Optional.ofNullable(request.getBalance()).ifPresent(existingAccount::setBalance);
+        Optional.ofNullable(request.getMonthlyMovements()).ifPresent(existingAccount::setMonthlyMovements);
+        Optional.ofNullable(request.getStatus())
+                .ifPresent(status -> existingAccount.setStatus(AccountStatus.valueOf(status)));
+        return existingAccount;
     }
 
     public AccountResponse getAccountResponse(Account account) {

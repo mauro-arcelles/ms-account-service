@@ -2,6 +2,7 @@ package com.project1.ms_account_service;
 
 import com.project1.ms_account_service.api.AccountsApiDelegate;
 import com.project1.ms_account_service.business.AccountService;
+import com.project1.ms_account_service.model.AccountPatchRequest;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     private AccountService accountService;
 
     @Override
-    public Mono<ResponseEntity<AccountResponse>> createAccount(@Valid Mono<AccountRequest> request, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AccountResponse>> createAccount(Mono<AccountRequest> request, ServerWebExchange exchange) {
         return accountService.createAccount(request)
                 .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
     }
@@ -29,12 +30,17 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     @Override
     public Mono<ResponseEntity<AccountResponse>> getAccount(String id, ServerWebExchange exchange) {
         return accountService.getAccountById(id)
-                .map(ResponseEntity::ok)
-                .defaultIfEmpty(ResponseEntity.notFound().build());
+                .map(ResponseEntity::ok);
     }
 
     @Override
     public Mono<ResponseEntity<Flux<AccountResponse>>> getAccountsByCustomer(String customerId, ServerWebExchange exchange) {
         return Mono.just(ResponseEntity.ok(accountService.getAccountsByCustomerId(customerId)));
+    }
+
+    @Override
+    public Mono<ResponseEntity<AccountResponse>> updateAccount(String id, Mono<AccountPatchRequest> accountPatchRequest, ServerWebExchange exchange) {
+        return accountService.updateAccount(id, accountPatchRequest)
+                .map(ResponseEntity::ok);
     }
 }

@@ -1,9 +1,12 @@
 package com.project1.ms_account_service.business;
 
 import com.project1.ms_account_service.exception.AccountCreationException;
+import com.project1.ms_account_service.exception.AccountNotFoundException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
+import com.project1.ms_account_service.model.AccountPatchRequest;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
+import com.project1.ms_account_service.model.entity.Account;
 import com.project1.ms_account_service.model.entity.AccountType;
 import com.project1.ms_account_service.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -31,30 +34,35 @@ public class AccountServiceImpl implements AccountService {
                 .flatMap(this::validateCustomerAccountLimits)
                 .map(accountMapper::getAccountCreationEntity)
                 .flatMap(accountRepository::save)
-                .map(accountMapper::getAccountResponse)
-                .doOnSuccess(a -> log.info("Account created successfully with id: {}", a.getId()))
-                .doOnError(e -> log.error("Error creating account", e));
+                .map(accountMapper::getAccountResponse);
     }
 
     @Override
     public Mono<AccountResponse> getAccountById(String id) {
         return accountRepository.findById(id)
                 .map(accountMapper::getAccountResponse)
-                .doOnSuccess(a -> log.info("Account found: {}", a.getId()))
-                .doOnError(e -> log.error("Error fetching account", e));
+                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with id: " + id)));
     }
 
     @Override
     public Flux<AccountResponse> getAccountsByCustomerId(String customerId) {
         return accountRepository.findByCustomerId(customerId)
-                .map(accountMapper::getAccountResponse)
-                .doOnComplete(() -> log.info("Completed fetching accounts for customer: {}", customerId))
-                .doOnError(e -> log.error("Error fetching customer accounts", e));
+                .map(accountMapper::getAccountResponse);
+    }
+
+    @Override
+    public Mono<AccountResponse> updateAccount(String id, Mono<AccountPatchRequest> request) {
+        return accountRepository.findById(id)
+                .flatMap(existingAccount -> request
+                        .map(req -> accountMapper.getAccountUpdateEntity(req, existingAccount))
+                        .flatMap(accountRepository::save)
+                        .map(accountMapper::getAccountResponse)
+                );
     }
 
     private Mono<AccountRequest> validateAccountType(AccountRequest request) {
         if (!isValidAccountType(request.getAccountType())) {
-            return Mono.error(new InvalidAccountTypeException("Invalid account type"));
+            return Mono.error(new InvalidAccountTypeException("Invalid account type should be one of: SAVINGS|CHECKING|FIXED_TERM"));
         }
         return Mono.just(request);
     }
@@ -75,7 +83,7 @@ public class AccountServiceImpl implements AccountService {
     private Mono<AccountRequest> validateBusinessCustomerAccounts(AccountRequest request) {
         AccountType accountType = AccountType.valueOf(request.getAccountType());
         if (accountType.equals(AccountType.SAVINGS) || accountType.equals(AccountType.FIXED_TERM)) {
-            return Mono.error(new AccountCreationException("Business customers cannot have "+ accountType + " account"));
+            return Mono.error(new AccountCreationException("Business customers cannot have " + accountType + " account"));
         }
         return Mono.just(request);
     }

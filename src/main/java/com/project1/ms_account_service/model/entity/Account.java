@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Document(collection = "accounts")
-public abstract class Account {
+public class Account {
     @Id
     private String id;
     private String accountNumber;

@@ -49,6 +49,36 @@ paths:
                 $ref: '#/components/schemas/AccountResponse'
         '404':
           description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBase'
+        '500':
+          description: Internal server error
+    patch:
+      operationId: updateAccount
+      summary: Update account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountPatchRequest'
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '404':
+          description: No accounts found
         '500':
           description: Internal server error
 
@@ -92,6 +122,17 @@ components:
         - accountType
         - customerId
         - initialBalance
+
+    AccountPatchRequest:
+      type: object
+      properties:
+        status:
+          type: string
+        balance:
+          type: number
+          format: double
+        monthlyMovements:
+          type: integer
 
     AccountResponse:
       type: object
