@@ -67,6 +67,21 @@ public class AccountMapper {
                 request.getStatus() == null) {
             throw new AccountCreationException("At least one field must be provided");
         }
+        Optional<Integer> optionalMonthlyMovements = Optional.ofNullable(request.getMonthlyMovements());
+        if (optionalMonthlyMovements.isPresent()) {
+            if (existingAccount.getAccountType().equals(AccountType.SAVINGS)) {
+                SavingsAccount savingsAccount = (SavingsAccount) existingAccount;
+                if (optionalMonthlyMovements.get() > savingsAccount.getMaxMonthlyMovements()) {
+                    throw new AccountCreationException("Max monthly movements limit reached. The monthly movements available: " + savingsAccount.getMaxMonthlyMovements());
+                }
+            }
+            if (existingAccount.getAccountType().equals(AccountType.FIXED_TERM)) {
+                FixedTermAccount fixedTermAccount = (FixedTermAccount) existingAccount;
+                if (optionalMonthlyMovements.get() > fixedTermAccount.getMaxMonthlyMovements()) {
+                    throw new AccountCreationException("Max monthly movements limit reached. The monthly movements available: " + fixedTermAccount.getMaxMonthlyMovements());
+                }
+            }
+        }
         Optional.ofNullable(request.getBalance()).ifPresent(existingAccount::setBalance);
         Optional.ofNullable(request.getMonthlyMovements()).ifPresent(existingAccount::setMonthlyMovements);
         Optional.ofNullable(request.getStatus())
@@ -85,6 +100,15 @@ public class AccountMapper {
         accountResponse.setMaintenanceFee(account.getMaintenanceFee());
         accountResponse.setMonthlyMovements(account.getMonthlyMovements());
         accountResponse.setStatus(account.getStatus().toString());
+        if (account.getAccountType().equals(AccountType.SAVINGS)) {
+            accountResponse.setMaxMonthlyMovements(((SavingsAccount) account).getMaxMonthlyMovements());
+        }
+        if (account.getAccountType().equals(AccountType.FIXED_TERM)) {
+            FixedTermAccount fixedTermAccount = (FixedTermAccount) account;
+            accountResponse.setMaxMonthlyMovements(fixedTermAccount.getMaxMonthlyMovements());
+            accountResponse.setEndDay(fixedTermAccount.getEndDay().atOffset(ZoneOffset.UTC));
+            accountResponse.setAvailableDayForMovements(fixedTermAccount.getAvailableDayForMovements().atOffset(ZoneOffset.UTC));
+        }
         return accountResponse;
     }
 

@@ -29,7 +29,7 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
 
     @Override
     public Mono<ResponseEntity<AccountResponse>> getAccount(String id, ServerWebExchange exchange) {
-        return accountService.getAccountById(id)
+        return accountService.getAccountByAccountNumber(id)
                 .map(ResponseEntity::ok);
     }
 

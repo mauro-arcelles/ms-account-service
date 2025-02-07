@@ -6,7 +6,6 @@ import com.project1.ms_account_service.exception.InvalidAccountTypeException;
 import com.project1.ms_account_service.model.AccountPatchRequest;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
-import com.project1.ms_account_service.model.entity.Account;
 import com.project1.ms_account_service.model.entity.AccountType;
 import com.project1.ms_account_service.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -38,10 +37,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public Mono<AccountResponse> getAccountById(String id) {
-        return accountRepository.findById(id)
+    public Mono<AccountResponse> getAccountByAccountNumber(String accountNumber) {
+        return accountRepository.findByAccountNumber(accountNumber)
                 .map(accountMapper::getAccountResponse)
-                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with id: " + id)));
+                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with account number: " + accountNumber)));
     }
 
     @Override
@@ -53,6 +52,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Mono<AccountResponse> updateAccount(String id, Mono<AccountPatchRequest> request) {
         return accountRepository.findById(id)
+                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with id: " + id)))
                 .flatMap(existingAccount -> request
                         .map(req -> accountMapper.getAccountUpdateEntity(req, existingAccount))
                         .flatMap(accountRepository::save)
