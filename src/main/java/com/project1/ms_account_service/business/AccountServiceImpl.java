@@ -60,6 +60,11 @@ public class AccountServiceImpl implements AccountService {
                 );
     }
 
+    /**
+     * Validates that the account type is valid
+     * @param request Account request to validate
+     * @return Valid account request or error
+     */
     private Mono<AccountRequest> validateAccountType(AccountRequest request) {
         if (!isValidAccountType(request.getAccountType())) {
             return Mono.error(new InvalidAccountTypeException("Invalid account type should be one of: SAVINGS|CHECKING|FIXED_TERM"));
@@ -67,6 +72,11 @@ public class AccountServiceImpl implements AccountService {
         return Mono.just(request);
     }
 
+    /**
+     * Validates customer account limits based on customer type
+     * @param request Account request to validate
+     * @return Valid account request or error
+     */
     private Mono<AccountRequest> validateCustomerAccountLimits(AccountRequest request) {
         return customerService.getCustomerById(request.getCustomerId())
                 .flatMap(customer -> {
@@ -80,6 +90,11 @@ public class AccountServiceImpl implements AccountService {
                 });
     }
 
+    /**
+     * Validates business customer account creation rules
+     * @param request Account request to validate
+     * @return Valid account request or error
+     */
     private Mono<AccountRequest> validateBusinessCustomerAccounts(AccountRequest request) {
         AccountType accountType = AccountType.valueOf(request.getAccountType());
         if (accountType.equals(AccountType.SAVINGS) || accountType.equals(AccountType.FIXED_TERM)) {
@@ -88,6 +103,11 @@ public class AccountServiceImpl implements AccountService {
         return Mono.just(request);
     }
 
+    /**
+     * Validates personal customer account creation rules
+     * @param request Account request to validate
+     * @return Valid account request or error
+     */
     private Mono<AccountRequest> validatePersonalCustomerAccounts(AccountRequest request) {
         return accountRepository.findByCustomerId(request.getCustomerId())
                 .collectList()
@@ -106,6 +126,11 @@ public class AccountServiceImpl implements AccountService {
                 });
     }
 
+    /**
+     * Checks if provided account type is valid
+     * @param accountType Account type to validate
+     * @return true if valid, false otherwise
+     */
     private boolean isValidAccountType(String accountType) {
         try {
             AccountType.valueOf(accountType);
