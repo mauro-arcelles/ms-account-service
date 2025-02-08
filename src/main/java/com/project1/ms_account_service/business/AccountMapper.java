@@ -1,6 +1,6 @@
 package com.project1.ms_account_service.business;
 
-import com.project1.ms_account_service.exception.AccountCreationException;
+import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
 import com.project1.ms_account_service.model.AccountBalanceResponse;
 import com.project1.ms_account_service.model.AccountPatchRequest;
@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,6 +23,9 @@ public class AccountMapper {
 
     @Value("${account.config.fixedterm.maxMonthlyMovements}")
     private Integer fixedTermMaxMonthlyMovements;
+
+    @Value("${account.config.fixedterm.availableDayForMovements}")
+    private Integer availableDayForMovements;
 
     @Value("${account.config.savings.maxMonthlyMovements}")
     private Integer savingsMaxMonthlyMovements;
@@ -42,13 +46,19 @@ public class AccountMapper {
                 account.setMaintenanceFee(maintenanceFee);
                 break;
             case FIXED_TERM:
+                if (request.getTermInMonths() == null) {
+                    throw new BadRequestException("termInMonths is necessary for FIXED TERM accounts");
+                }
                 FixedTermAccount fixedTermAccount = new FixedTermAccount();
                 fixedTermAccount.setMaxMonthlyMovements(fixedTermMaxMonthlyMovements);
+                fixedTermAccount.setTermInMonths(request.getTermInMonths());
+                fixedTermAccount.setAvailableDayForMovements(availableDayForMovements);
+                fixedTermAccount.setEndDay(LocalDateTime.now().plusMonths(request.getTermInMonths()));
                 account = fixedTermAccount;
                 account.setMaintenanceFee(0.0);
                 break;
             default:
-                throw new InvalidAccountTypeException("Invalid account type");
+                throw new InvalidAccountTypeException("Invalid account type. Should be one of: SAVINGS|CHECKING|FIXED_TERM");
         }
 
         account.setMonthlyMovements(0);
@@ -66,20 +76,20 @@ public class AccountMapper {
         if (request.getBalance() == null &&
                 request.getMonthlyMovements() == null &&
                 request.getStatus() == null) {
-            throw new AccountCreationException("At least one field must be provided");
+            throw new BadRequestException("At least one field must be provided");
         }
         Optional<Integer> optionalMonthlyMovements = Optional.ofNullable(request.getMonthlyMovements());
         if (optionalMonthlyMovements.isPresent()) {
             if (existingAccount.getAccountType().equals(AccountType.SAVINGS)) {
                 SavingsAccount savingsAccount = (SavingsAccount) existingAccount;
                 if (optionalMonthlyMovements.get() > savingsAccount.getMaxMonthlyMovements()) {
-                    throw new AccountCreationException("Max monthly movements limit reached. The monthly movements available: " + savingsAccount.getMaxMonthlyMovements());
+                    throw new BadRequestException("Max monthly movements limit reached. The monthly movements available: " + savingsAccount.getMaxMonthlyMovements());
                 }
             }
             if (existingAccount.getAccountType().equals(AccountType.FIXED_TERM)) {
                 FixedTermAccount fixedTermAccount = (FixedTermAccount) existingAccount;
                 if (optionalMonthlyMovements.get() > fixedTermAccount.getMaxMonthlyMovements()) {
-                    throw new AccountCreationException("Max monthly movements limit reached. The monthly movements available: " + fixedTermAccount.getMaxMonthlyMovements());
+                    throw new BadRequestException("Max monthly movements limit reached. The monthly movements available: " + fixedTermAccount.getMaxMonthlyMovements());
                 }
             }
         }
@@ -96,7 +106,7 @@ public class AccountMapper {
         accountResponse.setAccountNumber(account.getAccountNumber());
         accountResponse.setAccountType(account.getAccountType().toString());
         accountResponse.setBalance(account.getBalance());
-        accountResponse.setCreationDate(account.getCreationDate().atOffset(ZoneOffset.UTC));
+        accountResponse.setCreationDate(account.getCreationDate());
         accountResponse.setCustomerId(account.getCustomerId());
         accountResponse.setMaintenanceFee(account.getMaintenanceFee());
         accountResponse.setMonthlyMovements(account.getMonthlyMovements());
@@ -107,8 +117,8 @@ public class AccountMapper {
         if (account.getAccountType().equals(AccountType.FIXED_TERM)) {
             FixedTermAccount fixedTermAccount = (FixedTermAccount) account;
             accountResponse.setMaxMonthlyMovements(fixedTermAccount.getMaxMonthlyMovements());
-            accountResponse.setEndDay(fixedTermAccount.getEndDay().atOffset(ZoneOffset.UTC));
-            accountResponse.setAvailableDayForMovements(fixedTermAccount.getAvailableDayForMovements().atOffset(ZoneOffset.UTC));
+            accountResponse.setEndDay(fixedTermAccount.getEndDay());
+            accountResponse.setAvailableDayForMovements(fixedTermAccount.getAvailableDayForMovements());
         }
         return accountResponse;
     }

@@ -51,19 +51,19 @@ public class GlobalExceptionHandler {
                 .body(responseBase));
     }
 
-    @ExceptionHandler(AccountCreationException.class)
-    public Mono<ResponseEntity<ResponseBase>> handleAccountCreationException(Exception ex) {
-        ResponseBase responseBase = new ResponseBase();
-        responseBase.setMessage(ex.getMessage());
-        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(responseBase));
-    }
-
     @ExceptionHandler(AccountNotFoundException.class)
     public Mono<ResponseEntity<ResponseBase>> handleAccountNotFoundException(Exception ex) {
         ResponseBase responseBase = new ResponseBase();
         responseBase.setMessage(ex.getMessage());
         return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(responseBase));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public Mono<ResponseEntity<ResponseBase>> handleBadRequestException(Exception ex) {
+        ResponseBase responseBase = new ResponseBase();
+        responseBase.setMessage(ex.getMessage());
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(responseBase));
     }
 }

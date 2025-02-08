@@ -142,6 +142,12 @@
 								<reactive>true</reactive>
 								<delegatePattern>true</delegatePattern>
 							</configOptions>
+							<typeMappings>
+								<typeMapping>OffsetDateTime=java.time.LocalDateTime</typeMapping>
+							</typeMappings>
+							<importMappings>
+								<importMapping>LocalDateTime=java.time.LocalDateTime</importMapping>
+							</importMappings>
 						</configuration>
 					</execution>
 				</executions>

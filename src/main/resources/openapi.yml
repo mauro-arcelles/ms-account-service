@@ -139,6 +139,8 @@ components:
           type: string
         initialBalance:
           type: number
+        termInMonths:
+          type: integer
       required:
         - accountType
         - customerId
@@ -181,8 +183,7 @@ components:
           type: string
           format: date-time
         availableDayForMovements:
-          type: string
-          format: date-time
+          type: integer
         maxMonthlyMovements:
           type: integer
 
