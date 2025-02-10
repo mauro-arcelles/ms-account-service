@@ -68,6 +68,14 @@ public class AccountServiceImpl implements AccountService {
                 .map(accountMapper::getAccountBalanceResponse);
     }
 
+    @Override
+    public Mono<Void> deleteAccount(String id) {
+        return accountRepository.findById(id)
+                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with id: " + id)))
+                .flatMap(acc -> accountRepository.delete(acc))
+                .doOnSuccess(v -> log.info("Deleted account: {}", id));
+    }
+
     /**
      * Validates that the account type is valid
      * @param request Account request to validate

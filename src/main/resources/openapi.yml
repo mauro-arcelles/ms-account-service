@@ -81,6 +81,20 @@ paths:
           description: No accounts found
         '500':
           description: Internal server error
+    delete:
+      operationId: deleteAccount
+      summary: Delete Account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account deleted
+        '404':
+          description: Account not found
 
   /accounts/customer/{customerId}:
     get:
@@ -187,7 +201,7 @@ components:
         maxMonthlyMovements:
           type: integer
 
-    CustomerResponse: # customer-service
+    CustomerResponse:
       type: object
       properties:
         id:
@@ -201,7 +215,7 @@ components:
         type:
           type: string
 
-    ResponseBase: # customer-service
+    ResponseBase:
       type: object
       properties:
         message:

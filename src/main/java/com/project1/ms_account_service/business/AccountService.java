@@ -13,4 +13,5 @@ public interface AccountService {
     Flux<AccountResponse> getAccountsByCustomerId(String customerId);
     Mono<AccountResponse> updateAccount(String id, Mono<AccountPatchRequest> request);
     Mono<AccountBalanceResponse> getAccountBalanceByAccountNumber(String accountNumber);
+    Mono<Void> deleteAccount(String id);
 }

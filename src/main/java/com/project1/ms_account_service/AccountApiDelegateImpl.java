@@ -48,4 +48,9 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
         return accountService.getAccountBalanceByAccountNumber(accountNumber)
                 .map(ResponseEntity::ok);
     }
+
+    @Override
+    public Mono<ResponseEntity<Void>> deleteAccount(String id, ServerWebExchange exchange) {
+        return accountService.deleteAccount(id).map(ResponseEntity::ok);
+    }
 }
