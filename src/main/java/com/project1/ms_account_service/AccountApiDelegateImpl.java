@@ -21,14 +21,14 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     private AccountService accountService;
 
     @Override
-    public Mono<ResponseEntity<AccountResponse>> createAccount(Mono<AccountRequest> request, ServerWebExchange exchange) {
-        return accountService.createAccount(request)
-                .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
+    public Mono<ResponseEntity<AccountResponse>> getAccountById(String id, ServerWebExchange exchange) {
+        return accountService.getAccountById(id)
+                .map(ResponseEntity::ok);
     }
 
     @Override
-    public Mono<ResponseEntity<AccountResponse>> getAccount(String id, ServerWebExchange exchange) {
-        return accountService.getAccountByAccountNumber(id)
+    public Mono<ResponseEntity<AccountResponse>> getAccountByAccountNumber(String accountNumber, ServerWebExchange exchange) {
+        return accountService.getAccountByAccountNumber(accountNumber)
                 .map(ResponseEntity::ok);
     }
 
@@ -38,9 +38,9 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     }
 
     @Override
-    public Mono<ResponseEntity<AccountResponse>> updateAccount(String id, Mono<AccountPatchRequest> accountPatchRequest, ServerWebExchange exchange) {
-        return accountService.updateAccount(id, accountPatchRequest)
-                .map(ResponseEntity::ok);
+    public Mono<ResponseEntity<AccountResponse>> createAccount(Mono<AccountRequest> request, ServerWebExchange exchange) {
+        return accountService.createAccount(request)
+                .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
     }
 
     @Override
@@ -50,7 +50,13 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     }
 
     @Override
-    public Mono<ResponseEntity<Void>> deleteAccount(String id, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AccountResponse>> updateAccountById(String id, Mono<AccountPatchRequest> accountPatchRequest, ServerWebExchange exchange) {
+        return accountService.updateAccount(id, accountPatchRequest)
+                .map(ResponseEntity::ok);
+    }
+
+    @Override
+    public Mono<ResponseEntity<Void>> deleteAccountById(String id, ServerWebExchange exchange) {
         return accountService.deleteAccount(id).map(ResponseEntity::ok);
     }
 }

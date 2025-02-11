@@ -38,6 +38,12 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    public Mono<AccountResponse> getAccountById(String id) {
+        return accountRepository.findById(id)
+                .map(accountMapper::getAccountResponse);
+    }
+
+    @Override
     public Mono<AccountResponse> getAccountByAccountNumber(String accountNumber) {
         return accountRepository.findByAccountNumber(accountNumber)
                 .map(accountMapper::getAccountResponse)

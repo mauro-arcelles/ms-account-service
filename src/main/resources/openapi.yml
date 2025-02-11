@@ -30,10 +30,34 @@ paths:
         '500':
           description: Internal server error
 
+  /accounts/by-account-number/{accountNumber}:
+    get:
+      operationId: getAccountByAccountNumber
+      summary: Get account by account number
+      parameters:
+        - name: accountNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountResponse'
+        '404':
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBase'
+
   /accounts/{id}:
     get:
-      operationId: getAccount
-      summary: Get account by ID
+      operationId: getAccountById
+      summary: Get account by id
       parameters:
         - name: id
           in: path
@@ -53,11 +77,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ResponseBase'
-        '500':
-          description: Internal server error
+
     patch:
-      operationId: updateAccount
-      summary: Update account
+      operationId: updateAccountById
+      summary: Update account by id
       requestBody:
         required: true
         content:
@@ -79,11 +102,10 @@ paths:
                 $ref: '#/components/schemas/AccountResponse'
         '404':
           description: No accounts found
-        '500':
-          description: Internal server error
+
     delete:
-      operationId: deleteAccount
-      summary: Delete Account
+      operationId: deleteAccountById
+      summary: Delete Account by id
       parameters:
         - name: id
           in: path
