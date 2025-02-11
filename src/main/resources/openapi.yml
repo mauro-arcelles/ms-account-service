@@ -175,6 +175,14 @@ components:
           type: number
         customerId:
           type: string
+        holders:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountHolder'
+        signers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountSigner'
       required:
         - accountType
         - initialBalance
@@ -218,6 +226,31 @@ components:
           required:
             - termInMonths
 
+    AccountMember:
+      type: object
+      properties:
+        name:
+          type: string
+        lastName:
+          type: string
+        dni:
+          type: string
+        email:
+          type: string
+      required:
+        - name
+        - lastName
+        - dni
+        - email
+
+    AccountHolder:
+      allOf:
+        - $ref: '#/components/schemas/AccountMember'
+
+    AccountSigner:
+      allOf:
+        - $ref: '#/components/schemas/AccountMember'
+
     AccountPatchRequest:
       type: object
       properties:
@@ -258,6 +291,14 @@ components:
           type: integer
         maxMonthlyMovements:
           type: integer
+        holders:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountHolder'
+        signers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountSigner'
 
     CustomerResponse:
       type: object

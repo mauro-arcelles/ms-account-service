@@ -1,6 +1,6 @@
 package com.project1.ms_account_service.business;
 
-import com.project1.ms_account_service.exception.CustomerNotFoundException;
+import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.model.CustomerResponse;
 import com.project1.ms_account_service.model.ResponseBase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .retrieve()
                 .onStatus(HttpStatus::is4xxClientError, response ->
                         response.bodyToMono(ResponseBase.class)
-                                .flatMap(error -> Mono.error(new CustomerNotFoundException(error.getMessage()))))
+                                .flatMap(error -> Mono.error(new BadRequestException(error.getMessage()))))
                 .bodyToMono(CustomerResponse.class);
     }
 }

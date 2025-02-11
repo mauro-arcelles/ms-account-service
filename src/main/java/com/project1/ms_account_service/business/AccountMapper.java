@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class AccountMapper {
@@ -65,9 +66,55 @@ public class AccountMapper {
                 .creationDate(LocalDateTime.now())
                 .status(AccountStatus.ACTIVE)
                 .accountNumber(Account.generateAccountNumber())
+                .holders(request.getHolders()
+                        .stream()
+                        .map(this::getAccountHolder)
+                        .collect(Collectors.toList())
+                )
+                .signers(request.getSigners()
+                        .stream()
+                        .map(this::getAccountSigner)
+                        .collect(Collectors.toList())
+                )
                 .build();
 
         return account;
+    }
+
+    public AccountHolder getAccountHolder(com.project1.ms_account_service.model.AccountHolder accountHolderRequest) {
+        return AccountHolder.builder()
+                .dni(accountHolderRequest.getDni())
+                .name(accountHolderRequest.getName())
+                .lastName(accountHolderRequest.getLastName())
+                .email(accountHolderRequest.getEmail())
+                .build();
+    }
+
+    public AccountSigner getAccountSigner(com.project1.ms_account_service.model.AccountSigner accountSignerRequest) {
+        return AccountSigner.builder()
+                .dni(accountSignerRequest.getDni())
+                .name(accountSignerRequest.getName())
+                .lastName(accountSignerRequest.getLastName())
+                .email(accountSignerRequest.getEmail())
+                .build();
+    }
+
+    public com.project1.ms_account_service.model.AccountHolder getAccountHolderResponse(AccountHolder accountHolder) {
+        com.project1.ms_account_service.model.AccountHolder result = new com.project1.ms_account_service.model.AccountHolder();
+        result.setDni(accountHolder.getDni());
+        result.setName(accountHolder.getName());
+        result.setLastName(accountHolder.getLastName());
+        result.setEmail(accountHolder.getEmail());
+        return result;
+    }
+
+    public com.project1.ms_account_service.model.AccountSigner getAccountSignerResponse(AccountSigner accountSigner) {
+        com.project1.ms_account_service.model.AccountSigner result = new com.project1.ms_account_service.model.AccountSigner();
+        result.setDni(accountSigner.getDni());
+        result.setName(accountSigner.getName());
+        result.setLastName(accountSigner.getLastName());
+        result.setEmail(accountSigner.getEmail());
+        return result;
     }
 
     public Account getAccountUpdateEntity(AccountPatchRequest request, Account existingAccount) {
@@ -110,13 +157,27 @@ public class AccountMapper {
         accountResponse.setMonthlyMovements(account.getMonthlyMovements());
         accountResponse.setStatus(account.getStatus().toString());
         if (account.getAccountType().equals(AccountType.SAVINGS)) {
-            accountResponse.setMaxMonthlyMovements(((SavingsAccount) account).getMaxMonthlyMovements());
+            accountResponse.setMaxMonthlyMovements(((SavingsAccount) account).getMonthlyMovements());
         }
         if (account.getAccountType().equals(AccountType.FIXED_TERM)) {
             FixedTermAccount fixedTermAccount = (FixedTermAccount) account;
             accountResponse.setMaxMonthlyMovements(fixedTermAccount.getMaxMonthlyMovements());
             accountResponse.setEndDay(fixedTermAccount.getEndDay());
             accountResponse.setAvailableDayForMovements(fixedTermAccount.getAvailableDayForMovements());
+        }
+        if (!account.getHolders().isEmpty()) {
+            accountResponse.setHolders(account.getHolders()
+                    .stream()
+                    .map(this::getAccountHolderResponse)
+                    .collect(Collectors.toList())
+            );
+        }
+        if (!account.getSigners().isEmpty()) {
+            accountResponse.setSigners(account.getSigners()
+                    .stream()
+                    .map(this::getAccountSignerResponse)
+                    .collect(Collectors.toList())
+            );
         }
         return accountResponse;
     }

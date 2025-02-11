@@ -4,7 +4,9 @@ import com.project1.ms_account_service.exception.AccountNotFoundException;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
 import com.project1.ms_account_service.model.*;
+import com.project1.ms_account_service.model.entity.AccountStatus;
 import com.project1.ms_account_service.model.entity.AccountType;
+import com.project1.ms_account_service.model.entity.CustomerType;
 import com.project1.ms_account_service.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,9 +31,28 @@ public class AccountServiceImpl implements AccountService {
         return request
                 .flatMap(this::validateAccountType)
                 .flatMap(this::validateCustomerAccountLimits)
+                .flatMap(r -> customerService.getCustomerById(r.getCustomerId())
+                        .flatMap(cr -> validateBusinessAccountMembers(r, cr)))
                 .map(accountMapper::getAccountCreationEntity)
                 .flatMap(accountRepository::save)
                 .map(accountMapper::getAccountResponse);
+    }
+
+    private Mono<AccountRequest> validateBusinessAccountMembers(AccountRequest request, CustomerResponse customerResponse) {
+        CustomerType customerType = CustomerType.valueOf(customerResponse.getType());
+        if (customerType == CustomerType.BUSINESS) {
+            if (request.getHolders().isEmpty()) {
+                return Mono.error(new BadRequestException("At least one HOLDER is necessary for BUSINESS accounts"));
+            }
+        } else {
+            if (!request.getHolders().isEmpty()) {
+                return Mono.error(new BadRequestException("HOLDERS are not valid for PERSONAL accounts"));
+            }
+            if (!request.getSigners().isEmpty()) {
+                return Mono.error(new BadRequestException("AUTHORIZED SIGNERS are not valid for PERSONAL accounts"));
+            }
+        }
+        return Mono.just(request);
     }
 
     @Override
@@ -75,12 +96,17 @@ public class AccountServiceImpl implements AccountService {
     public Mono<Void> deleteAccount(String id) {
         return accountRepository.findById(id)
                 .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with id: " + id)))
-                .flatMap(acc -> accountRepository.delete(acc))
+                .flatMap(acc -> {
+                    acc.setStatus(AccountStatus.INACTIVE);
+                    return accountRepository.save(acc);
+                })
+                .then()
                 .doOnSuccess(v -> log.info("Deleted account: {}", id));
     }
 
     /**
      * Validates that the account type is valid
+     *
      * @param request Account request to validate
      * @return Valid account request or error
      */
@@ -91,18 +117,23 @@ public class AccountServiceImpl implements AccountService {
         return Mono.just(request);
     }
 
+    private Mono<CustomerResponse> validateCustomerExists(AccountRequest request) {
+        return customerService.getCustomerById(request.getCustomerId());
+    }
+
     /**
      * Validates customer account limits based on customer type
+     *
      * @param request Account request to validate
      * @return Valid account request or error
      */
     private Mono<AccountRequest> validateCustomerAccountLimits(AccountRequest request) {
         return customerService.getCustomerById(request.getCustomerId())
                 .flatMap(customer -> {
-                    if ("PERSONAL".equals(customer.getType())) {
+                    if (CustomerType.PERSONAL.toString().equals(customer.getType())) {
                         return validatePersonalCustomerAccounts(request);
                     }
-                    if ("BUSINESS".equals(customer.getType())) {
+                    if (CustomerType.BUSINESS.toString().equals(customer.getType())) {
                         return validateBusinessCustomerAccounts(request);
                     }
                     return Mono.just(request);
@@ -111,6 +142,7 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * Validates business customer account creation rules
+     *
      * @param request Account request to validate
      * @return Valid account request or error
      */
@@ -124,6 +156,7 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * Validates personal customer account creation rules
+     *
      * @param request Account request to validate
      * @return Valid account request or error
      */
@@ -147,6 +180,7 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * Checks if provided account type is valid
+     *
      * @param accountType Account type to validate
      * @return true if valid, false otherwise
      */

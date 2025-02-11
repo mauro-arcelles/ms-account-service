@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -29,6 +30,8 @@ public class Account {
     private AccountStatus status;
     private Integer monthlyMovements;
     private Double maintenanceFee;
+    private List<AccountHolder> holders;
+    private List<AccountSigner> signers;
 
     public static String generateAccountNumber() {
         return "ACC-" + UUID.randomUUID().toString();
