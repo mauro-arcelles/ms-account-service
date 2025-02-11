@@ -1,12 +1,15 @@
 package com.project1.ms_account_service.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
 import com.project1.ms_account_service.model.ResponseBase;
+import org.springframework.core.codec.DecodingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
+import org.springframework.web.server.ServerWebInputException;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -63,6 +66,22 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<ResponseBase>> handleBadRequestException(Exception ex) {
         ResponseBase responseBase = new ResponseBase();
         responseBase.setMessage(ex.getMessage());
+        return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(responseBase));
+    }
+
+    @ExceptionHandler(ServerWebInputException.class)
+    public Mono<ResponseEntity<ResponseBase>> handleServerWebInputException(ServerWebInputException ex) {
+        ResponseBase responseBase = new ResponseBase();
+        ex.printStackTrace();
+
+        if (ex.getCause() instanceof DecodingException &&
+                ex.getCause().getCause() instanceof InvalidTypeIdException) {
+            responseBase.setMessage("Invalid account type. Must be one of: SAVINGS|CHECKING|FIXED_TERM");
+        } else {
+            responseBase.setMessage("Invalid request format: " + ex.getLocalizedMessage());
+        }
+
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(responseBase));
     }

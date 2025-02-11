@@ -171,16 +171,52 @@ components:
       properties:
         accountType:
           type: string
+        initialBalance:
+          type: number
         customerId:
+          type: string
+      required:
+        - accountType
+        - initialBalance
+        - customerId
+      discriminator:
+        propertyName: accountType
+        mapping:
+          CHECKING: '#/components/schemas/CheckingAccount'
+          SAVINGS: '#/components/schemas/SavingsAccount'
+          FIXED_TERM: '#/components/schemas/FixedTermAccount'
+
+    Account:
+      type: object
+      properties:
+        accountType:
           type: string
         initialBalance:
           type: number
-        termInMonths:
-          type: integer
+        customerId:
+          type: string
       required:
         - accountType
-        - customerId
         - initialBalance
+        - customerId
+
+    CheckingAccount:
+      allOf:
+        - $ref: '#/components/schemas/AccountRequest'
+
+    SavingsAccount:
+      allOf:
+        - $ref: '#/components/schemas/AccountRequest'
+
+    FixedTermAccount:
+      allOf:
+        - $ref: '#/components/schemas/AccountRequest'
+        - type: object
+          properties:
+            termInMonths:
+              type: integer
+          required:
+            - termInMonths
 
     AccountPatchRequest:
       type: object

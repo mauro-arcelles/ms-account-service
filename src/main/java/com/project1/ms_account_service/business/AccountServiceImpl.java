@@ -3,10 +3,7 @@ package com.project1.ms_account_service.business;
 import com.project1.ms_account_service.exception.AccountNotFoundException;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
-import com.project1.ms_account_service.model.AccountBalanceResponse;
-import com.project1.ms_account_service.model.AccountPatchRequest;
-import com.project1.ms_account_service.model.AccountRequest;
-import com.project1.ms_account_service.model.AccountResponse;
+import com.project1.ms_account_service.model.*;
 import com.project1.ms_account_service.model.entity.AccountType;
 import com.project1.ms_account_service.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -89,7 +86,7 @@ public class AccountServiceImpl implements AccountService {
      */
     private Mono<AccountRequest> validateAccountType(AccountRequest request) {
         if (!isValidAccountType(request.getAccountType())) {
-            return Mono.error(new InvalidAccountTypeException("Invalid account type should be one of: SAVINGS|CHECKING|FIXED_TERM"));
+            return Mono.error(new InvalidAccountTypeException());
         }
         return Mono.just(request);
     }
@@ -120,7 +117,7 @@ public class AccountServiceImpl implements AccountService {
     private Mono<AccountRequest> validateBusinessCustomerAccounts(AccountRequest request) {
         AccountType accountType = AccountType.valueOf(request.getAccountType());
         if (accountType.equals(AccountType.SAVINGS) || accountType.equals(AccountType.FIXED_TERM)) {
-            return Mono.error(new BadRequestException("Business customers cannot have " + accountType + " account"));
+            return Mono.error(new BadRequestException("BUSINESS customers cannot have " + accountType + " account"));
         }
         return Mono.just(request);
     }
@@ -139,10 +136,10 @@ public class AccountServiceImpl implements AccountService {
                             .filter(acc -> acc.getAccountType().equals(accountType))
                             .count();
                     if (accountType.equals(AccountType.SAVINGS) && accountTypeCount > 0) {
-                        return Mono.error(new BadRequestException("Personal customers can only have one savings account"));
+                        return Mono.error(new BadRequestException("PERSONAL customers can only have one SAVINGS account"));
                     }
                     if (accountType.equals(AccountType.CHECKING) && accountTypeCount > 0) {
-                        return Mono.error(new BadRequestException("Personal customers can only have one checking account"));
+                        return Mono.error(new BadRequestException("PERSONAL customers can only have one CHECKING account"));
                     }
                     return Mono.just(request);
                 });

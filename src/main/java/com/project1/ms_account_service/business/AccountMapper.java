@@ -11,15 +11,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.Optional;
-import java.util.UUID;
 
 @Component
 public class AccountMapper {
     @Value("${account.config.checking.maintenanceFee}")
-    private Double maintenanceFee;
+    private Double checkingAccountMaintenanceFee;
 
     @Value("${account.config.fixedterm.maxMonthlyMovements}")
     private Integer fixedTermMaxMonthlyMovements;
@@ -35,39 +32,40 @@ public class AccountMapper {
         AccountType accountType = AccountType.valueOf(request.getAccountType());
         switch (accountType) {
             case SAVINGS:
-                SavingsAccount savingsAccount = new SavingsAccount();
-                savingsAccount.setMaxMonthlyMovements(savingsMaxMonthlyMovements);
-                account = savingsAccount;
-                account.setMaintenanceFee(0.0);
+                account = SavingsAccount.builder()
+                        .maintenanceFee(0.0)
+                        .maxMonthlyMovements(savingsMaxMonthlyMovements)
+                        .build();
                 break;
             case CHECKING:
-                CheckingAccount checkingAccount = new CheckingAccount();
-                account = checkingAccount;
-                account.setMaintenanceFee(maintenanceFee);
+                account = CheckingAccount.builder()
+                        .maintenanceFee(checkingAccountMaintenanceFee)
+                        .build();
                 break;
             case FIXED_TERM:
-                if (request.getTermInMonths() == null) {
-                    throw new BadRequestException("termInMonths is necessary for FIXED TERM accounts");
-                }
-                FixedTermAccount fixedTermAccount = new FixedTermAccount();
-                fixedTermAccount.setMaxMonthlyMovements(fixedTermMaxMonthlyMovements);
-                fixedTermAccount.setTermInMonths(request.getTermInMonths());
-                fixedTermAccount.setAvailableDayForMovements(availableDayForMovements);
-                fixedTermAccount.setEndDay(LocalDateTime.now().plusMonths(request.getTermInMonths()));
-                account = fixedTermAccount;
-                account.setMaintenanceFee(0.0);
+                com.project1.ms_account_service.model.FixedTermAccount fixedTermRequest = (com.project1.ms_account_service.model.FixedTermAccount) request;
+                account = FixedTermAccount.builder()
+                        .maxMonthlyMovements(fixedTermMaxMonthlyMovements)
+                        .termInMonths(fixedTermRequest.getTermInMonths())
+                        .availableDayForMovements(availableDayForMovements)
+                        .endDay(LocalDateTime.now().plusMonths(fixedTermRequest.getTermInMonths()))
+                        .maintenanceFee(0.0)
+                        .build();
                 break;
             default:
-                throw new InvalidAccountTypeException("Invalid account type. Should be one of: SAVINGS|CHECKING|FIXED_TERM");
+                throw new InvalidAccountTypeException();
         }
 
-        account.setMonthlyMovements(0);
-        account.setAccountType(AccountType.valueOf(request.getAccountType()));
-        account.setCustomerId(request.getCustomerId());
-        account.setBalance(request.getInitialBalance());
-        account.setCreationDate(LocalDateTime.now());
-        account.setStatus(AccountStatus.ACTIVE);
-        account.setAccountNumber(generateAccountNumber());
+        // Add common account properties
+        account = account.toBuilder()
+                .monthlyMovements(0)
+                .accountType(AccountType.valueOf(request.getAccountType()))
+                .customerId(request.getCustomerId())
+                .balance(request.getInitialBalance())
+                .creationDate(LocalDateTime.now())
+                .status(AccountStatus.ACTIVE)
+                .accountNumber(Account.generateAccountNumber())
+                .build();
 
         return account;
     }
@@ -127,9 +125,5 @@ public class AccountMapper {
         AccountBalanceResponse accountBalanceResponse = new AccountBalanceResponse();
         accountBalanceResponse.setBalance(account.getBalance());
         return accountBalanceResponse;
-    }
-
-    private String generateAccountNumber() {
-        return "ACC-" + UUID.randomUUID().toString();
     }
 }
