@@ -1,5 +1,6 @@
 package com.project1.ms_account_service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -7,8 +8,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
+    @Value("${customer.service.baseUrl}")
+    private String customerServiceBaseUrl;
+
     @Bean
     public WebClient webClient() {
-        return WebClient.create("http://localhost:8090/api/v1");
+        return WebClient.builder()
+                .baseUrl(customerServiceBaseUrl)
+                .build();
     }
 }
