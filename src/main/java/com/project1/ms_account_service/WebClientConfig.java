@@ -8,7 +8,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${customer.service.baseUrl}")
+    @Value("${application.config.customer-service-url}")
     private String customerServiceBaseUrl;
 
     @Bean

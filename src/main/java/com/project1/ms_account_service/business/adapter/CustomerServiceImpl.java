@@ -18,7 +18,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Mono<CustomerResponse> getCustomerById(String id) {
         return webClient.get()
-                .uri("/customers/{id}", id)
+                .uri("/{id}", id)
                 .retrieve()
                 .onStatus(HttpStatus::is4xxClientError, response ->
                         response.bodyToMono(ResponseBase.class)
