@@ -7,6 +7,7 @@ import com.project1.ms_account_service.exception.InvalidAccountTypeException;
 import com.project1.ms_account_service.model.*;
 import com.project1.ms_account_service.model.entity.AccountStatus;
 import com.project1.ms_account_service.model.entity.AccountType;
+import com.project1.ms_account_service.model.entity.CustomerStatus;
 import com.project1.ms_account_service.model.entity.CustomerType;
 import com.project1.ms_account_service.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -32,8 +37,11 @@ public class AccountServiceImpl implements AccountService {
         return request
                 .flatMap(this::validateAccountType)
                 .flatMap(this::validateCustomerAccountLimits)
-                .flatMap(r -> customerService.getCustomerById(r.getCustomerId())
-                        .flatMap(cr -> validateBusinessAccountMembers(r, cr)))
+                .flatMap(tuple -> {
+                    CustomerResponse customerResponse = tuple.getT1();
+                    AccountRequest accountRequest = tuple.getT2();
+                    return this.validateBusinessAccountMembers(accountRequest, customerResponse);
+                })
                 .map(accountMapper::getAccountCreationEntity)
                 .flatMap(accountRepository::save)
                 .map(accountMapper::getAccountResponse);
@@ -118,26 +126,30 @@ public class AccountServiceImpl implements AccountService {
         return Mono.just(request);
     }
 
-    private Mono<CustomerResponse> validateCustomerExists(AccountRequest request) {
-        return customerService.getCustomerById(request.getCustomerId());
-    }
-
     /**
      * Validates customer account limits based on customer type
      *
      * @param request Account request to validate
      * @return Valid account request or error
      */
-    private Mono<AccountRequest> validateCustomerAccountLimits(AccountRequest request) {
+    private Mono<Tuple2<CustomerResponse, AccountRequest>> validateCustomerAccountLimits(AccountRequest request) {
         return customerService.getCustomerById(request.getCustomerId())
                 .flatMap(customer -> {
+                    if (CustomerStatus.INACTIVE.toString().equals(customer.getStatus())) {
+                        return Mono.error(new BadRequestException("Customer has INACTIVE status"));
+                    }
+
                     if (CustomerType.PERSONAL.toString().equals(customer.getType())) {
-                        return validatePersonalCustomerAccounts(request);
+                        return validatePersonalCustomerAccounts(request)
+                                .map(acr -> Tuples.of(customer, acr));
                     }
+
                     if (CustomerType.BUSINESS.toString().equals(customer.getType())) {
-                        return validateBusinessCustomerAccounts(request);
+                        return validateBusinessCustomerAccounts(request)
+                                .map(acr -> Tuples.of(customer, acr));
                     }
-                    return Mono.just(request);
+
+                    return Mono.just(Tuples.of(customer, request));
                 });
     }
 

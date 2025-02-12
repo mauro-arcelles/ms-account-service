@@ -307,11 +307,17 @@ components:
           type: string
         documentNumber:
           type: string
+        ruc:
+          type: string
+        businessName:
+          type: string
         firstName:
           type: string
         lastName:
           type: string
         type:
+          type: string
+        status:
           type: string
 
     ResponseBase:
