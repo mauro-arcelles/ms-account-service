@@ -118,7 +118,7 @@ paths:
         '404':
           description: Account not found
 
-  /accounts/customer/{customerId}:
+  /accounts/by-customer/{customerId}:
     get:
       operationId: getAccountsByCustomer
       summary: Get accounts by customer ID
@@ -137,10 +137,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/AccountResponse'
-        '404':
-          description: No accounts found
-        '500':
-          description: Internal server error
 
   /accounts/balance/{accountNumber}:
     get:
