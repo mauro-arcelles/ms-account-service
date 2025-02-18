@@ -30,8 +30,8 @@ public class Account {
     private AccountStatus status;
     private Integer monthlyMovements;
     private Double maintenanceFee;
-    private List<AccountHolder> holders;
-    private List<AccountSigner> signers;
+    private List<AccountMember> holders;
+    private List<AccountMember> signers;
 
     public static String generateAccountNumber() {
         return "ACC-" + UUID.randomUUID().toString();

@@ -1,14 +1,12 @@
 package com.project1.ms_account_service.business;
 
+import com.project1.ms_account_service.business.adapter.CreditCardService;
 import com.project1.ms_account_service.business.adapter.CustomerService;
 import com.project1.ms_account_service.exception.AccountNotFoundException;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
 import com.project1.ms_account_service.model.*;
-import com.project1.ms_account_service.model.entity.AccountStatus;
-import com.project1.ms_account_service.model.entity.AccountType;
-import com.project1.ms_account_service.model.entity.CustomerStatus;
-import com.project1.ms_account_service.model.entity.CustomerType;
+import com.project1.ms_account_service.model.entity.*;
 import com.project1.ms_account_service.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +29,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private CustomerService customerService;
+
+    @Autowired
+    private CreditCardService creditCardService;
 
     @Override
     public Mono<AccountResponse> createAccount(Mono<AccountRequest> request) {
@@ -140,11 +141,36 @@ public class AccountServiceImpl implements AccountService {
                     }
 
                     if (CustomerType.PERSONAL.toString().equals(customer.getType())) {
+                        // if personal subtype is VIP and account type is SAVINGS validate if customer has at least one creditcard
+                        if (PersonalCustomerType.VIP.toString().equals(customer.getSubType()) && AccountType.SAVINGS.toString().equals(request.getAccountType())) {
+                            return creditCardService.getCustomerCreditCards(customer.getId())
+                                    .collectList()
+                                    .flatMap(cards -> {
+                                        if (cards.isEmpty()) {
+                                            return Mono.error(new BadRequestException("PERSONAL VIP customers must have at least one credit card for SAVINGS account"));
+                                        }
+                                        return validatePersonalCustomerAccounts(request)
+                                                .map(acr -> Tuples.of(customer, acr));
+                                    });
+                        }
+
                         return validatePersonalCustomerAccounts(request)
                                 .map(acr -> Tuples.of(customer, acr));
                     }
 
                     if (CustomerType.BUSINESS.toString().equals(customer.getType())) {
+                        if (BusinessCustomerType.PYME.toString().equals(customer.getSubType()) && AccountType.CHECKING.toString().equals(request.getAccountType())) {
+                            return creditCardService.getCustomerCreditCards(customer.getId())
+                                    .collectList()
+                                    .flatMap(cards -> {
+                                        if (cards.isEmpty()) {
+                                            return Mono.error(new BadRequestException("BUSINESS PYME customers must have at least one credit card for CHECKING accounts"));
+                                        }
+                                        return validateBusinessCustomerAccounts(request)
+                                                .map(acr -> Tuples.of(customer, acr));
+                                    });
+                        }
+
                         return validateBusinessCustomerAccounts(request)
                                 .map(acr -> Tuples.of(customer, acr));
                     }

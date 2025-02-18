@@ -40,7 +40,7 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     @Override
     public Mono<ResponseEntity<AccountResponse>> createAccount(Mono<AccountRequest> request, ServerWebExchange exchange) {
         return accountService.createAccount(request)
-                .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
+                .map(ResponseEntity.status(HttpStatus.CREATED)::body);
     }
 
     @Override
@@ -57,6 +57,7 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
 
     @Override
     public Mono<ResponseEntity<Void>> deleteAccountById(String id, ServerWebExchange exchange) {
-        return accountService.deleteAccount(id).map(ResponseEntity::ok);
+        return accountService.deleteAccount(id)
+                .map(ResponseEntity::ok);
     }
 }

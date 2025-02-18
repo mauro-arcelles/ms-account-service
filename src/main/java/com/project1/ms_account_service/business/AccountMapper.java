@@ -68,12 +68,12 @@ public class AccountMapper {
                 .accountNumber(Account.generateAccountNumber())
                 .holders(request.getHolders()
                         .stream()
-                        .map(this::getAccountHolder)
+                        .map(this::getAccountMember)
                         .collect(Collectors.toList())
                 )
                 .signers(request.getSigners()
                         .stream()
-                        .map(this::getAccountSigner)
+                        .map(this::getAccountMember)
                         .collect(Collectors.toList())
                 )
                 .build();
@@ -81,40 +81,22 @@ public class AccountMapper {
         return account;
     }
 
-    public AccountHolder getAccountHolder(com.project1.ms_account_service.model.AccountHolder accountHolderRequest) {
-        return AccountHolder.builder()
-                .dni(accountHolderRequest.getDni())
-                .name(accountHolderRequest.getName())
-                .lastName(accountHolderRequest.getLastName())
-                .email(accountHolderRequest.getEmail())
+    public AccountMember getAccountMember(com.project1.ms_account_service.model.AccountMember accountMemberRequest) {
+        return AccountMember.builder()
+                .dni(accountMemberRequest.getDni())
+                .name(accountMemberRequest.getName())
+                .lastName(accountMemberRequest.getLastName())
+                .email(accountMemberRequest.getEmail())
                 .build();
     }
 
-    public AccountSigner getAccountSigner(com.project1.ms_account_service.model.AccountSigner accountSignerRequest) {
-        return AccountSigner.builder()
-                .dni(accountSignerRequest.getDni())
-                .name(accountSignerRequest.getName())
-                .lastName(accountSignerRequest.getLastName())
-                .email(accountSignerRequest.getEmail())
-                .build();
-    }
-
-    public com.project1.ms_account_service.model.AccountHolder getAccountHolderResponse(AccountHolder accountHolder) {
-        com.project1.ms_account_service.model.AccountHolder result = new com.project1.ms_account_service.model.AccountHolder();
-        result.setDni(accountHolder.getDni());
-        result.setName(accountHolder.getName());
-        result.setLastName(accountHolder.getLastName());
-        result.setEmail(accountHolder.getEmail());
-        return result;
-    }
-
-    public com.project1.ms_account_service.model.AccountSigner getAccountSignerResponse(AccountSigner accountSigner) {
-        com.project1.ms_account_service.model.AccountSigner result = new com.project1.ms_account_service.model.AccountSigner();
-        result.setDni(accountSigner.getDni());
-        result.setName(accountSigner.getName());
-        result.setLastName(accountSigner.getLastName());
-        result.setEmail(accountSigner.getEmail());
-        return result;
+    public com.project1.ms_account_service.model.AccountMember getAccountMemberResponse(AccountMember accountMember) {
+        com.project1.ms_account_service.model.AccountMember response = new com.project1.ms_account_service.model.AccountMember();
+        response.setDni(accountMember.getDni());
+        response.setEmail(accountMember.getEmail());
+        response.setName(accountMember.getName());
+        response.setLastName(accountMember.getLastName());
+        return response;
     }
 
     public Account getAccountUpdateEntity(AccountPatchRequest request, Account existingAccount) {
@@ -168,14 +150,14 @@ public class AccountMapper {
         if (!account.getHolders().isEmpty()) {
             accountResponse.setHolders(account.getHolders()
                     .stream()
-                    .map(this::getAccountHolderResponse)
+                    .map(this::getAccountMemberResponse)
                     .collect(Collectors.toList())
             );
         }
         if (!account.getSigners().isEmpty()) {
             accountResponse.setSigners(account.getSigners()
                     .stream()
-                    .map(this::getAccountSignerResponse)
+                    .map(this::getAccountMemberResponse)
                     .collect(Collectors.toList())
             );
         }
