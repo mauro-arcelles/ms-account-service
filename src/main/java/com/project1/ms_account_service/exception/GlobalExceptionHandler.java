@@ -1,7 +1,9 @@
 package com.project1.ms_account_service.exception;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.InvalidTypeIdException;
+import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.ResponseBase;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.codec.DecodingException;
@@ -91,6 +93,13 @@ public class GlobalExceptionHandler {
                 String fieldName = invalidFormatException.getPath().get(0).getFieldName();
                 String targetType = invalidFormatException.getTargetType().getSimpleName();
                 errors.put(fieldName, List.of("Must be a valid " + targetType.toLowerCase()));
+            }
+            if (decodingException.getCause() instanceof InvalidTypeIdException) {
+                if (ex.getMessage().contains(AccountRequest.class.getName())) {
+                    errors.put("accountType", List.of("Invalid account type. Should be one of: CHECKING|SAVINGS|FIXED_TERM"));
+                } else {
+                    errors.put("accountType", List.of("Invalid type provided: " + ex.getMessage()));
+                }
             }
         }
 

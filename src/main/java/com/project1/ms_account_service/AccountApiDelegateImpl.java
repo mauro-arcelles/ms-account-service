@@ -2,10 +2,7 @@ package com.project1.ms_account_service;
 
 import com.project1.ms_account_service.api.AccountsApiDelegate;
 import com.project1.ms_account_service.business.AccountService;
-import com.project1.ms_account_service.model.AccountBalanceResponse;
-import com.project1.ms_account_service.model.AccountPatchRequest;
-import com.project1.ms_account_service.model.AccountRequest;
-import com.project1.ms_account_service.model.AccountResponse;
+import com.project1.ms_account_service.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

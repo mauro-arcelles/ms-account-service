@@ -190,20 +190,6 @@ components:
           SAVINGS: '#/components/schemas/SavingsAccount'
           FIXED_TERM: '#/components/schemas/FixedTermAccount'
 
-    Account:
-      type: object
-      properties:
-        accountType:
-          type: string
-        initialBalance:
-          type: number
-        customerId:
-          type: string
-      required:
-        - accountType
-        - initialBalance
-        - customerId
-
     CheckingAccount:
       allOf:
         - $ref: '#/components/schemas/AccountRequest'
