@@ -19,19 +19,36 @@ spring.config.import=optional:configserver:http://localhost:8888
 ```
 for properties
 ```yaml
+spring:
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: ms-account-service
+
+server:
+  port: 8091
+
 account:
   config:
     checking:
-      maintenanceFee: 5.0
+      maintenanceFee: 5
+      maxMonthlyMovementsNoFee: 5
+      transactionCommissionFeePercentage: 5
     fixedterm:
       maxMonthlyMovements: 1
       availableDayForMovements: 20
+      maxMonthlyMovementsNoFee: 5
+      transactionCommissionFeePercentage: 5
     savings:
-      maxMonthlyMovements: 5
+      maxMonthlyMovements: 30
+      maxMonthlyMovementsNoFee: 5
+      transactionCommissionFeePercentage: 5
 
 application:
   config:
     customer-service-url: http://localhost:8090/api/v1/customers
+    credit-service-url: http://localhost:8093/api/v1/credits
 ```
 
 ## Swagger
