@@ -24,6 +24,7 @@ public class Account {
     private String id;
     private String accountNumber;
     private AccountType accountType;
+    private CustomerType customerType;
     private BigDecimal balance;
     private String customerId;
     private LocalDateTime creationDate;

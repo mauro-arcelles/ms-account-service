@@ -47,7 +47,7 @@ public class AccountMapper {
     @Value("${account.config.savings.transactionCommissionFeePercentage}")
     private BigDecimal savingsTransactionCommissionFeePercentage;
 
-    public Account getAccountCreationEntity(AccountRequest request) {
+    public Account getAccountCreationEntity(AccountRequest request, CustomerType customerType) {
         Account account;
         AccountType accountType = AccountType.valueOf(request.getAccountType());
         switch (accountType) {
@@ -86,6 +86,7 @@ public class AccountMapper {
         account = account.toBuilder()
                 .monthlyMovements(0)
                 .accountType(AccountType.valueOf(request.getAccountType()))
+                .customerType(customerType)
                 .customerId(request.getCustomerId())
                 .balance(request.getInitialBalance())
                 .creationDate(LocalDateTime.now())
@@ -157,6 +158,7 @@ public class AccountMapper {
         accountResponse.setId(account.getId());
         accountResponse.setAccountNumber(account.getAccountNumber());
         Optional.ofNullable(account.getAccountType()).ifPresent(accountType -> accountResponse.setAccountType(accountType.toString()));
+        Optional.ofNullable(account.getCustomerType()).ifPresent(customerType -> accountResponse.setCustomerType(customerType.toString()));
         accountResponse.setBalance(account.getBalance());
         accountResponse.setCreationDate(account.getCreationDate());
         accountResponse.setCustomerId(account.getCustomerId());
@@ -164,7 +166,7 @@ public class AccountMapper {
         accountResponse.setMonthlyMovements(account.getMonthlyMovements());
         Optional.ofNullable(account.getStatus()).ifPresent(accountStatus -> accountResponse.setStatus(accountStatus.toString()));
         if (AccountType.SAVINGS.equals(account.getAccountType())) {
-            accountResponse.setMaxMonthlyMovements(account.getMonthlyMovements());
+            accountResponse.setMaxMonthlyMovements(((SavingsAccount) account).getMaxMonthlyMovements());
         }
         if (AccountType.FIXED_TERM.equals(account.getAccountType())) {
             FixedTermAccount fixedTermAccount = (FixedTermAccount) account;

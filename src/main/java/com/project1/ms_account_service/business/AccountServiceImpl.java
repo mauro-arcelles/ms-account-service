@@ -41,9 +41,10 @@ public class AccountServiceImpl implements AccountService {
                 .flatMap(tuple -> {
                     CustomerResponse customerResponse = tuple.getT1();
                     AccountRequest accountRequest = tuple.getT2();
-                    return this.validateBusinessAccountMembers(accountRequest, customerResponse);
+                    CustomerType customerType = CustomerType.valueOf(customerResponse.getType());
+                    return this.validateBusinessAccountMembers(accountRequest, customerResponse)
+                            .map(ar -> this.accountMapper.getAccountCreationEntity(accountRequest, customerType));
                 })
-                .map(accountMapper::getAccountCreationEntity)
                 .flatMap(accountRepository::save)
                 .map(accountMapper::getAccountResponse);
     }
