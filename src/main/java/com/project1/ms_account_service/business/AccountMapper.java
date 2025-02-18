@@ -10,6 +10,7 @@ import com.project1.ms_account_service.model.entity.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,6 +29,24 @@ public class AccountMapper {
     @Value("${account.config.savings.maxMonthlyMovements}")
     private Integer savingsMaxMonthlyMovements;
 
+    @Value("${account.config.checking.maxMonthlyMovementsNoFee}")
+    private Integer checkingMaxMonthlyMovementsNoFee;
+
+    @Value("${account.config.fixedterm.maxMonthlyMovementsNoFee}")
+    private Integer fixedTermMaxMonthlyMovementsNoFee;
+
+    @Value("${account.config.savings.maxMonthlyMovementsNoFee}")
+    private Integer savingsMaxMonthlyMovementsNoFee;
+
+    @Value("${account.config.checking.transactionCommissionFeePercentage}")
+    private BigDecimal checkingTransactionCommissionFeePercentage;
+
+    @Value("${account.config.fixedterm.transactionCommissionFeePercentage}")
+    private BigDecimal fixedTermTransactionCommissionFeePercentage;
+
+    @Value("${account.config.savings.transactionCommissionFeePercentage}")
+    private BigDecimal savingsTransactionCommissionFeePercentage;
+
     public Account getAccountCreationEntity(AccountRequest request) {
         Account account;
         AccountType accountType = AccountType.valueOf(request.getAccountType());
@@ -36,11 +55,15 @@ public class AccountMapper {
                 account = SavingsAccount.builder()
                         .maintenanceFee(0.0)
                         .maxMonthlyMovements(savingsMaxMonthlyMovements)
+                        .maxMonthlyMovementsNoFee(savingsMaxMonthlyMovementsNoFee)
+                        .transactionCommissionFeePercentage(savingsTransactionCommissionFeePercentage)
                         .build();
                 break;
             case CHECKING:
                 account = CheckingAccount.builder()
                         .maintenanceFee(checkingAccountMaintenanceFee)
+                        .maxMonthlyMovementsNoFee(checkingMaxMonthlyMovementsNoFee)
+                        .transactionCommissionFeePercentage(checkingTransactionCommissionFeePercentage)
                         .build();
                 break;
             case FIXED_TERM:
@@ -51,6 +74,8 @@ public class AccountMapper {
                         .availableDayForMovements(availableDayForMovements)
                         .endDay(LocalDateTime.now().plusMonths(fixedTermRequest.getTermInMonths()))
                         .maintenanceFee(0.0)
+                        .maxMonthlyMovementsNoFee(fixedTermMaxMonthlyMovementsNoFee)
+                        .transactionCommissionFeePercentage(fixedTermTransactionCommissionFeePercentage)
                         .build();
                 break;
             default:
@@ -131,36 +156,42 @@ public class AccountMapper {
         AccountResponse accountResponse = new AccountResponse();
         accountResponse.setId(account.getId());
         accountResponse.setAccountNumber(account.getAccountNumber());
-        accountResponse.setAccountType(account.getAccountType().toString());
+        Optional.ofNullable(account.getAccountType()).ifPresent(accountType -> accountResponse.setAccountType(accountType.toString()));
         accountResponse.setBalance(account.getBalance());
         accountResponse.setCreationDate(account.getCreationDate());
         accountResponse.setCustomerId(account.getCustomerId());
         accountResponse.setMaintenanceFee(account.getMaintenanceFee());
         accountResponse.setMonthlyMovements(account.getMonthlyMovements());
-        accountResponse.setStatus(account.getStatus().toString());
-        if (account.getAccountType().equals(AccountType.SAVINGS)) {
-            accountResponse.setMaxMonthlyMovements(((SavingsAccount) account).getMonthlyMovements());
+        Optional.ofNullable(account.getStatus()).ifPresent(accountStatus -> accountResponse.setStatus(accountStatus.toString()));
+        if (AccountType.SAVINGS.equals(account.getAccountType())) {
+            accountResponse.setMaxMonthlyMovements(account.getMonthlyMovements());
         }
-        if (account.getAccountType().equals(AccountType.FIXED_TERM)) {
+        if (AccountType.FIXED_TERM.equals(account.getAccountType())) {
             FixedTermAccount fixedTermAccount = (FixedTermAccount) account;
             accountResponse.setMaxMonthlyMovements(fixedTermAccount.getMaxMonthlyMovements());
             accountResponse.setEndDay(fixedTermAccount.getEndDay());
             accountResponse.setAvailableDayForMovements(fixedTermAccount.getAvailableDayForMovements());
         }
-        if (!account.getHolders().isEmpty()) {
-            accountResponse.setHolders(account.getHolders()
-                    .stream()
-                    .map(this::getAccountMemberResponse)
-                    .collect(Collectors.toList())
-            );
-        }
-        if (!account.getSigners().isEmpty()) {
-            accountResponse.setSigners(account.getSigners()
-                    .stream()
-                    .map(this::getAccountMemberResponse)
-                    .collect(Collectors.toList())
-            );
-        }
+        Optional.ofNullable(account.getHolders()).ifPresent(accountMembers -> {
+            if (!accountMembers.isEmpty()) {
+                accountResponse.setHolders(account.getHolders()
+                        .stream()
+                        .map(this::getAccountMemberResponse)
+                        .collect(Collectors.toList())
+                );
+            }
+        });
+        Optional.ofNullable(account.getSigners()).ifPresent(accountMembers -> {
+            if (!accountMembers.isEmpty()) {
+                accountResponse.setSigners(account.getSigners()
+                        .stream()
+                        .map(this::getAccountMemberResponse)
+                        .collect(Collectors.toList())
+                );
+            }
+        });
+        Optional.ofNullable(account.getMaxMonthlyMovementsNoFee()).ifPresent(accountResponse::setMaxMonthlyMovementsNoFee);
+        Optional.ofNullable(account.getTransactionCommissionFeePercentage()).ifPresent(accountResponse::setTransactionCommissionFeePercentage);
         return accountResponse;
     }
 

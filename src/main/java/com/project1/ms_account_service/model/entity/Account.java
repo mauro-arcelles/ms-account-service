@@ -32,6 +32,8 @@ public class Account {
     private Double maintenanceFee;
     private List<AccountMember> holders;
     private List<AccountMember> signers;
+    private Integer maxMonthlyMovementsNoFee;
+    private BigDecimal transactionCommissionFeePercentage;
 
     public static String generateAccountNumber() {
         return "ACC-" + UUID.randomUUID().toString();

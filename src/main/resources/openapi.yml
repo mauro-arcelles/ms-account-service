@@ -273,6 +273,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AccountMember'
+        maxMonthlyMovementsNoFee:
+          type: integer
+        transactionCommissionFeePercentage:
+          type: number
 
     CustomerResponse:
       type: object
