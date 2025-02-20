@@ -11,7 +11,10 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder(toBuilder = true)
 public class AccountMember {
     private String name;
+
     private String lastName;
+
     private String dni;
+
     private String email;
 }

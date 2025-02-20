@@ -36,17 +36,17 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Mono<AccountResponse> createAccount(Mono<AccountRequest> request) {
         return request
-                .flatMap(this::validateAccountType)
-                .flatMap(this::validateCustomerAccountLimits)
-                .flatMap(tuple -> {
-                    CustomerResponse customerResponse = tuple.getT1();
-                    AccountRequest accountRequest = tuple.getT2();
-                    CustomerType customerType = CustomerType.valueOf(customerResponse.getType());
-                    return this.validateBusinessAccountMembers(accountRequest, customerResponse)
-                            .map(ar -> this.accountMapper.getAccountCreationEntity(accountRequest, customerType));
-                })
-                .flatMap(accountRepository::save)
-                .map(accountMapper::getAccountResponse);
+            .flatMap(this::validateAccountType)
+            .flatMap(this::validateCustomerAccountLimits)
+            .flatMap(tuple -> {
+                CustomerResponse customerResponse = tuple.getT1();
+                AccountRequest accountRequest = tuple.getT2();
+                CustomerType customerType = CustomerType.valueOf(customerResponse.getType());
+                return this.validateBusinessAccountMembers(accountRequest, customerResponse)
+                    .map(ar -> this.accountMapper.getAccountCreationEntity(accountRequest, customerType));
+            })
+            .flatMap(accountRepository::save)
+            .map(accountMapper::getAccountResponse);
     }
 
     private Mono<AccountRequest> validateBusinessAccountMembers(AccountRequest request, CustomerResponse customerResponse) {
@@ -69,50 +69,50 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Mono<AccountResponse> getAccountById(String id) {
         return accountRepository.findById(id)
-                .map(accountMapper::getAccountResponse);
+            .map(accountMapper::getAccountResponse);
     }
 
     @Override
     public Mono<AccountResponse> getAccountByAccountNumber(String accountNumber) {
         return accountRepository.findByAccountNumber(accountNumber)
-                .map(accountMapper::getAccountResponse)
-                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with account number: " + accountNumber)));
+            .map(accountMapper::getAccountResponse)
+            .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with account number: " + accountNumber)));
     }
 
     @Override
     public Flux<AccountResponse> getAccountsByCustomerId(String customerId) {
         return accountRepository.findByCustomerId(customerId)
-                .map(accountMapper::getAccountResponse);
+            .map(accountMapper::getAccountResponse);
     }
 
     @Override
     public Mono<AccountResponse> updateAccount(String id, Mono<AccountPatchRequest> request) {
         return accountRepository.findById(id)
-                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with id: " + id)))
-                .flatMap(existingAccount -> request
-                        .map(req -> accountMapper.getAccountUpdateEntity(req, existingAccount))
-                        .flatMap(accountRepository::save)
-                        .map(accountMapper::getAccountResponse)
-                );
+            .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with id: " + id)))
+            .flatMap(existingAccount -> request
+                .map(req -> accountMapper.getAccountUpdateEntity(req, existingAccount))
+                .flatMap(accountRepository::save)
+                .map(accountMapper::getAccountResponse)
+            );
     }
 
     @Override
     public Mono<AccountBalanceResponse> getAccountBalanceByAccountNumber(String accountNumber) {
         return accountRepository.findByAccountNumber(accountNumber)
-                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account no found with account number: " + accountNumber)))
-                .map(accountMapper::getAccountBalanceResponse);
+            .switchIfEmpty(Mono.error(new AccountNotFoundException("Account no found with account number: " + accountNumber)))
+            .map(accountMapper::getAccountBalanceResponse);
     }
 
     @Override
     public Mono<Void> deleteAccount(String id) {
         return accountRepository.findById(id)
-                .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with id: " + id)))
-                .flatMap(acc -> {
-                    acc.setStatus(AccountStatus.INACTIVE);
-                    return accountRepository.save(acc);
-                })
-                .then()
-                .doOnSuccess(v -> log.info("Deleted account: {}", id));
+            .switchIfEmpty(Mono.error(new AccountNotFoundException("Account not found with id: " + id)))
+            .flatMap(acc -> {
+                acc.setStatus(AccountStatus.INACTIVE);
+                return accountRepository.save(acc);
+            })
+            .then()
+            .doOnSuccess(v -> log.info("Deleted account: {}", id));
     }
 
     /**
@@ -136,48 +136,50 @@ public class AccountServiceImpl implements AccountService {
      */
     private Mono<Tuple2<CustomerResponse, AccountRequest>> validateCustomerAccountLimits(AccountRequest request) {
         return customerService.getCustomerById(request.getCustomerId())
-                .flatMap(customer -> {
-                    if (CustomerStatus.INACTIVE.toString().equals(customer.getStatus())) {
-                        return Mono.error(new BadRequestException("Customer has INACTIVE status"));
+            .flatMap(customer -> {
+                if (CustomerStatus.INACTIVE.toString().equals(customer.getStatus())) {
+                    return Mono.error(new BadRequestException("Customer has INACTIVE status"));
+                }
+
+                if (CustomerType.PERSONAL.toString().equals(customer.getType())) {
+                    // if personal subtype is VIP and account type is SAVINGS validate if customer has at least one creditcard
+                    if (PersonalCustomerType.VIP.toString().equals(customer.getSubType()) && AccountType.SAVINGS.toString().equals(request.getAccountType())) {
+                        return creditCardService.getCustomerCreditCards(customer.getId())
+                            .collectList()
+                            .flatMap(cards -> {
+                                if (cards.isEmpty()) {
+                                    return Mono.error(new BadRequestException("PERSONAL VIP customers must have at least one credit card for SAVINGS account"));
+                                }
+                                return validatePersonalCustomerAccounts(request)
+                                    .map(acr -> Tuples.of(customer, acr));
+                            });
                     }
 
-                    if (CustomerType.PERSONAL.toString().equals(customer.getType())) {
-                        // if personal subtype is VIP and account type is SAVINGS validate if customer has at least one creditcard
-                        if (PersonalCustomerType.VIP.toString().equals(customer.getSubType()) && AccountType.SAVINGS.toString().equals(request.getAccountType())) {
-                            return creditCardService.getCustomerCreditCards(customer.getId())
-                                    .collectList()
-                                    .flatMap(cards -> {
-                                        if (cards.isEmpty()) {
-                                            return Mono.error(new BadRequestException("PERSONAL VIP customers must have at least one credit card for SAVINGS account"));
-                                        }
-                                        return validatePersonalCustomerAccounts(request)
-                                                .map(acr -> Tuples.of(customer, acr));
-                                    });
-                        }
+                    return validatePersonalCustomerAccounts(request)
+                        .map(acr -> Tuples.of(customer, acr));
+                }
 
-                        return validatePersonalCustomerAccounts(request)
-                                .map(acr -> Tuples.of(customer, acr));
+                if (CustomerType.BUSINESS.toString().equals(customer.getType())) {
+                    if (BusinessCustomerType.PYME.toString().equals(customer.getSubType()) &&
+                        AccountType.CHECKING.toString().equals(request.getAccountType())) {
+                        return creditCardService.getCustomerCreditCards(customer.getId())
+                            .collectList()
+                            .flatMap(cards -> {
+                                if (cards.isEmpty()) {
+                                    return Mono.error(
+                                        new BadRequestException("BUSINESS PYME customers must have at least one credit card for CHECKING accounts"));
+                                }
+                                return validateBusinessCustomerAccounts(request)
+                                    .map(acr -> Tuples.of(customer, acr));
+                            });
                     }
 
-                    if (CustomerType.BUSINESS.toString().equals(customer.getType())) {
-                        if (BusinessCustomerType.PYME.toString().equals(customer.getSubType()) && AccountType.CHECKING.toString().equals(request.getAccountType())) {
-                            return creditCardService.getCustomerCreditCards(customer.getId())
-                                    .collectList()
-                                    .flatMap(cards -> {
-                                        if (cards.isEmpty()) {
-                                            return Mono.error(new BadRequestException("BUSINESS PYME customers must have at least one credit card for CHECKING accounts"));
-                                        }
-                                        return validateBusinessCustomerAccounts(request)
-                                                .map(acr -> Tuples.of(customer, acr));
-                                    });
-                        }
+                    return validateBusinessCustomerAccounts(request)
+                        .map(acr -> Tuples.of(customer, acr));
+                }
 
-                        return validateBusinessCustomerAccounts(request)
-                                .map(acr -> Tuples.of(customer, acr));
-                    }
-
-                    return Mono.just(Tuples.of(customer, request));
-                });
+                return Mono.just(Tuples.of(customer, request));
+            });
     }
 
     /**
@@ -202,20 +204,20 @@ public class AccountServiceImpl implements AccountService {
      */
     private Mono<AccountRequest> validatePersonalCustomerAccounts(AccountRequest request) {
         return accountRepository.findByCustomerId(request.getCustomerId())
-                .collectList()
-                .flatMap(accounts -> {
-                    AccountType accountType = AccountType.valueOf(request.getAccountType());
-                    long accountTypeCount = accounts.stream()
-                            .filter(acc -> acc.getAccountType().equals(accountType))
-                            .count();
-                    if (accountType.equals(AccountType.SAVINGS) && accountTypeCount > 0) {
-                        return Mono.error(new BadRequestException("PERSONAL customers can only have one SAVINGS account"));
-                    }
-                    if (accountType.equals(AccountType.CHECKING) && accountTypeCount > 0) {
-                        return Mono.error(new BadRequestException("PERSONAL customers can only have one CHECKING account"));
-                    }
-                    return Mono.just(request);
-                });
+            .collectList()
+            .flatMap(accounts -> {
+                AccountType accountType = AccountType.valueOf(request.getAccountType());
+                long accountTypeCount = accounts.stream()
+                    .filter(acc -> acc.getAccountType().equals(accountType))
+                    .count();
+                if (accountType.equals(AccountType.SAVINGS) && accountTypeCount > 0) {
+                    return Mono.error(new BadRequestException("PERSONAL customers can only have one SAVINGS account"));
+                }
+                if (accountType.equals(AccountType.CHECKING) && accountTypeCount > 0) {
+                    return Mono.error(new BadRequestException("PERSONAL customers can only have one CHECKING account"));
+                }
+                return Mono.just(request);
+            });
     }
 
     /**

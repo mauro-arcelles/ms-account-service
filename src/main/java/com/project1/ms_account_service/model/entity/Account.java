@@ -22,18 +22,31 @@ import java.util.UUID;
 public class Account {
     @Id
     private String id;
+
     private String accountNumber;
+
     private AccountType accountType;
+
     private CustomerType customerType;
+
     private BigDecimal balance;
+
     private String customerId;
+
     private LocalDateTime creationDate;
+
     private AccountStatus status;
+
     private Integer monthlyMovements;
+
     private Double maintenanceFee;
+
     private List<AccountMember> holders;
+
     private List<AccountMember> signers;
+
     private Integer maxMonthlyMovementsNoFee;
+
     private BigDecimal transactionCommissionFeePercentage;
 
     public static String generateAccountNumber() {

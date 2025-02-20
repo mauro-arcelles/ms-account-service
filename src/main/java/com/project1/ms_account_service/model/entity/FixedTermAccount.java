@@ -17,7 +17,10 @@ import java.time.LocalDateTime;
 @TypeAlias("fixedTermAccount")
 public class FixedTermAccount extends Account {
     private LocalDateTime endDay;
+
     private Integer maxMonthlyMovements;
+
     private Integer availableDayForMovements;
+
     private Integer termInMonths;
 }
