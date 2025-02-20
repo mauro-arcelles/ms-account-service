@@ -104,6 +104,18 @@
 	</dependencyManagement>
 
 	<build>
+		<!--Jacoco-->
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>0.8.8</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<!--Jacoco-->
+
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -147,6 +159,35 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			<!--Jacoco-->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<!--Exclusiones para reporte de cobertura-->
+				<configuration>
+					<excludes>
+						<exclude>com/project1/ms_account_service/MsAccountServiceApplication.class</exclude>
+					</excludes>
+				</configuration>
+				<!--Exclusiones para reporte de cobertura-->
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<!--Jacoco-->
+
 		</plugins>
 	</build>
 
