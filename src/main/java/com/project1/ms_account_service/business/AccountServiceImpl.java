@@ -144,8 +144,8 @@ public class AccountServiceImpl implements AccountService {
                 }
 
                 if (CustomerType.PERSONAL.toString().equals(customer.getType())) {
-                    // if personal subtype is VIP validate if we just can create SAVINGS account
                     if (PersonalCustomerType.VIP.toString().equals(customer.getSubType())) {
+                        // if personal subtype is VIP we just can create SAVINGS accounts
                         if (!AccountType.SAVINGS.toString().equals(request.getAccountType())) {
                             return Mono.error(new BadRequestException("PERSONAL VIP customers can just have SAVINGS account"));
                         }
@@ -162,19 +162,24 @@ public class AccountServiceImpl implements AccountService {
                     }
                     return validatePersonalCustomerAccounts(request)
                         .map(acr -> Tuples.of(customer, acr));
-                }
 
-                if (BusinessCustomerType.PYME.toString().equals(customer.getSubType()) && AccountType.CHECKING.toString().equals(request.getAccountType())) {
-                    return creditCardService.getCustomerCreditCards(customer.getId())
-                        .collectList()
-                        .flatMap(cards -> {
-                            if (cards.isEmpty()) {
-                                return Mono.error(
-                                    new BadRequestException("BUSINESS PYME customers must have at least one credit card for CHECKING accounts"));
-                            }
-                            return validateBusinessCustomerAccounts(request)
-                                .map(acr -> Tuples.of(customer, acr));
-                        });
+                } else {
+                    if (BusinessCustomerType.PYME.toString().equals(customer.getSubType())) {
+                        // if business subtype is PYME we just can create CHECKING accounts
+                        if (!AccountType.CHECKING.toString().equals(request.getAccountType())) {
+                            return Mono.error(new BadRequestException("BUSINESS PYME customers can just have CHECKING account"));
+                        }
+                        return creditCardService.getCustomerCreditCards(customer.getId())
+                            .collectList()
+                            .flatMap(cards -> {
+                                if (cards.isEmpty()) {
+                                    return Mono.error(
+                                        new BadRequestException("BUSINESS PYME customers must have at least one CREDIT CARD for CHECKING account"));
+                                }
+                                return validateBusinessCustomerAccounts(request)
+                                    .map(acr -> Tuples.of(customer, acr));
+                            });
+                    }
                 }
 
                 return validateBusinessCustomerAccounts(request)
