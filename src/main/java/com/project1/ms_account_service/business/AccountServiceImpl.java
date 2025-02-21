@@ -2,6 +2,7 @@ package com.project1.ms_account_service.business;
 
 import com.project1.ms_account_service.business.adapter.CreditCardService;
 import com.project1.ms_account_service.business.adapter.CustomerService;
+import com.project1.ms_account_service.business.factory.AccountFactory;
 import com.project1.ms_account_service.exception.AccountNotFoundException;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
@@ -16,8 +17,6 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-import java.util.Optional;
-
 @Service
 @Slf4j
 public class AccountServiceImpl implements AccountService {
@@ -26,6 +25,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private AccountMapper accountMapper;
+
+    @Autowired
+    private AccountFactory accountFactory;
 
     @Autowired
     private CustomerService customerService;
@@ -43,7 +45,7 @@ public class AccountServiceImpl implements AccountService {
                 AccountRequest accountRequest = tuple.getT2();
                 CustomerType customerType = CustomerType.valueOf(customerResponse.getType());
                 return this.validateBusinessAccountMembers(accountRequest, customerResponse)
-                    .map(ar -> this.accountMapper.getAccountCreationEntity(accountRequest, customerType));
+                    .map(ar -> this.accountFactory.getAccount(accountRequest, customerType));
             })
             .flatMap(accountRepository::save)
             .map(accountMapper::getAccountResponse);
@@ -159,26 +161,21 @@ public class AccountServiceImpl implements AccountService {
                         .map(acr -> Tuples.of(customer, acr));
                 }
 
-                if (CustomerType.BUSINESS.toString().equals(customer.getType())) {
-                    if (BusinessCustomerType.PYME.toString().equals(customer.getSubType()) &&
-                        AccountType.CHECKING.toString().equals(request.getAccountType())) {
-                        return creditCardService.getCustomerCreditCards(customer.getId())
-                            .collectList()
-                            .flatMap(cards -> {
-                                if (cards.isEmpty()) {
-                                    return Mono.error(
-                                        new BadRequestException("BUSINESS PYME customers must have at least one credit card for CHECKING accounts"));
-                                }
-                                return validateBusinessCustomerAccounts(request)
-                                    .map(acr -> Tuples.of(customer, acr));
-                            });
-                    }
-
-                    return validateBusinessCustomerAccounts(request)
-                        .map(acr -> Tuples.of(customer, acr));
+                if (BusinessCustomerType.PYME.toString().equals(customer.getSubType()) && AccountType.CHECKING.toString().equals(request.getAccountType())) {
+                    return creditCardService.getCustomerCreditCards(customer.getId())
+                        .collectList()
+                        .flatMap(cards -> {
+                            if (cards.isEmpty()) {
+                                return Mono.error(
+                                    new BadRequestException("BUSINESS PYME customers must have at least one credit card for CHECKING accounts"));
+                            }
+                            return validateBusinessCustomerAccounts(request)
+                                .map(acr -> Tuples.of(customer, acr));
+                        });
                 }
 
-                return Mono.just(Tuples.of(customer, request));
+                return validateBusinessCustomerAccounts(request)
+                    .map(acr -> Tuples.of(customer, acr));
             });
     }
 

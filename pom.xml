@@ -168,6 +168,9 @@
 				<configuration>
 					<excludes>
 						<exclude>com/project1/ms_account_service/MsAccountServiceApplication.class</exclude>
+						<exclude>com/project1/ms_account_service/model/**</exclude>
+						<exclude>com/project1/ms_account_service/api/**</exclude>
+						<exclude>**/target/**</exclude>
 					</excludes>
 				</configuration>
 				<!--Exclusiones para reporte de cobertura-->
