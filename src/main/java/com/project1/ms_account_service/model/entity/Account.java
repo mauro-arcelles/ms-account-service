@@ -39,7 +39,7 @@ public class Account {
 
     private Integer monthlyMovements;
 
-    private Double maintenanceFee;
+    private BigDecimal maintenanceFee;
 
     private List<AccountMember> holders;
 

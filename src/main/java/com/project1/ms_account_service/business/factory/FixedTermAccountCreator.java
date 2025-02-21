@@ -38,7 +38,7 @@ public class FixedTermAccountCreator implements AccountCreator {
             .termInMonths(fixedTermRequest.getTermInMonths())
             .availableDayForMovements(availableDayForMovements)
             .endDay(LocalDateTime.now().plusMonths(fixedTermRequest.getTermInMonths()))
-            .maintenanceFee(0.0)
+            .maintenanceFee(BigDecimal.ZERO)
             .maxMonthlyMovementsNoFee(fixedTermMaxMonthlyMovementsNoFee)
             .transactionCommissionFeePercentage(fixedTermTransactionCommissionFeePercentage)
             .monthlyMovements(0)

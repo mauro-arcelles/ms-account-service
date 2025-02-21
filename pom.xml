@@ -134,28 +134,28 @@
 				<groupId>org.openapitools</groupId>
 				<artifactId>openapi-generator-maven-plugin</artifactId>
 				<version>7.11.0</version>
+				<configuration>
+					<inputSpec>${project.basedir}/src/main/resources/openapi.yml</inputSpec>
+					<generatorName>spring</generatorName>
+					<apiPackage>com.project1.ms_account_service.api</apiPackage>
+					<modelPackage>com.project1.ms_account_service.model</modelPackage>
+					<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
+					<configOptions>
+						<reactive>true</reactive>
+						<delegatePattern>true</delegatePattern>
+					</configOptions>
+					<typeMappings>
+						<typeMapping>OffsetDateTime=java.time.LocalDateTime</typeMapping>
+					</typeMappings>
+					<importMappings>
+						<importMapping>LocalDateTime=java.time.LocalDateTime</importMapping>
+					</importMappings>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
 							<goal>generate</goal>
 						</goals>
-						<configuration>
-							<inputSpec>${project.basedir}/src/main/resources/openapi.yml</inputSpec>
-							<generatorName>spring</generatorName>
-							<apiPackage>com.project1.ms_account_service.api</apiPackage>
-							<modelPackage>com.project1.ms_account_service.model</modelPackage>
-							<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
-							<configOptions>
-								<reactive>true</reactive>
-								<delegatePattern>true</delegatePattern>
-							</configOptions>
-							<typeMappings>
-								<typeMapping>OffsetDateTime=java.time.LocalDateTime</typeMapping>
-							</typeMappings>
-							<importMappings>
-								<importMapping>LocalDateTime=java.time.LocalDateTime</importMapping>
-							</importMappings>
-						</configuration>
 					</execution>
 				</executions>
 			</plugin>

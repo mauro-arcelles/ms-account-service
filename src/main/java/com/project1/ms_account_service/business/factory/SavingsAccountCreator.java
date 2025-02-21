@@ -29,7 +29,7 @@ public class SavingsAccountCreator implements AccountCreator {
     @Override
     public Account createAccount(AccountRequest request, CustomerType customerType) {
         return SavingsAccount.builder()
-            .maintenanceFee(0.0)
+            .maintenanceFee(BigDecimal.ZERO)
             .maxMonthlyMovements(savingsMaxMonthlyMovements)
             .maxMonthlyMovementsNoFee(savingsMaxMonthlyMovementsNoFee)
             .transactionCommissionFeePercentage(savingsTransactionCommissionFeePercentage)

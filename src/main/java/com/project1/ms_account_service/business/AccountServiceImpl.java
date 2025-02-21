@@ -144,19 +144,22 @@ public class AccountServiceImpl implements AccountService {
                 }
 
                 if (CustomerType.PERSONAL.toString().equals(customer.getType())) {
-                    // if personal subtype is VIP and account type is SAVINGS validate if customer has at least one creditcard
-                    if (PersonalCustomerType.VIP.toString().equals(customer.getSubType()) && AccountType.SAVINGS.toString().equals(request.getAccountType())) {
+                    // if personal subtype is VIP validate if we just can create SAVINGS account
+                    if (PersonalCustomerType.VIP.toString().equals(customer.getSubType())) {
+                        if (!AccountType.SAVINGS.toString().equals(request.getAccountType())) {
+                            return Mono.error(new BadRequestException("PERSONAL VIP customers can just have SAVINGS account"));
+                        }
+                        // if we are creating SAVINGS account, verify if customer has at least one credit card in the system
                         return creditCardService.getCustomerCreditCards(customer.getId())
                             .collectList()
                             .flatMap(cards -> {
                                 if (cards.isEmpty()) {
-                                    return Mono.error(new BadRequestException("PERSONAL VIP customers must have at least one credit card for SAVINGS account"));
+                                    return Mono.error(new BadRequestException("PERSONAL VIP customers must have at least one CREDIT CARD for SAVINGS account"));
                                 }
                                 return validatePersonalCustomerAccounts(request)
                                     .map(acr -> Tuples.of(customer, acr));
                             });
                     }
-
                     return validatePersonalCustomerAccounts(request)
                         .map(acr -> Tuples.of(customer, acr));
                 }

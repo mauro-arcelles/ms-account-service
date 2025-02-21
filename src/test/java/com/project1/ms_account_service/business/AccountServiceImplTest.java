@@ -402,6 +402,100 @@ public class AccountServiceImplTest {
     }
 
     @Test
+    void createAccount_RejectsCheckingAccountForVipCustomer() {
+        AccountRequest request = new AccountRequest();
+        request.setAccountType(AccountType.CHECKING.toString());
+        request.setCustomerId("123");
+        request.setHolders(new ArrayList<>());
+        request.setSigners(new ArrayList<>());
+
+        CustomerResponse customer = new CustomerResponse();
+        customer.setId("123");
+        customer.setType(CustomerType.PERSONAL.toString());
+        customer.setStatus(CustomerStatus.ACTIVE.toString());
+        customer.setSubType(PersonalCustomerType.VIP.toString());
+
+        Account account = new Account();
+        account.setId("1");
+        account.setAccountNumber("ACC-123");
+        account.setAccountType(AccountType.SAVINGS);
+        account.setCustomerId("123");
+        account.setStatus(AccountStatus.ACTIVE);
+
+        AccountResponse response = new AccountResponse();
+        response.setId("1");
+        response.setAccountNumber("ACC-123");
+        response.setAccountType(AccountType.SAVINGS.toString());
+        response.setCustomerId("123");
+        response.setStatus(AccountStatus.ACTIVE.toString());
+
+        List<CreditCardResponse> creditCardResponses = new ArrayList<>();
+        CreditCardResponse creditCardResponse = new CreditCardResponse();
+        creditCardResponse.setCardNumber("123456789101");
+        creditCardResponse.setId("1");
+        creditCardResponses.add(creditCardResponse);
+        Flux<CreditCardResponse> creditCardResponseFlux = Flux.fromIterable(creditCardResponses);
+
+        when(customerService.getCustomerById("123")).thenReturn(Mono.just(customer));
+        when(accountFactory.getAccount(any(), any())).thenReturn(account);
+        when(accountRepository.findByCustomerId("123")).thenReturn(Flux.empty());
+        when(accountRepository.save(any())).thenReturn(Mono.just(account));
+        when(accountMapper.getAccountResponse(account)).thenReturn(response);
+        when(creditCardService.getCustomerCreditCards("123")).thenReturn(creditCardResponseFlux);
+
+        StepVerifier.create(accountService.createAccount(Mono.just(request)))
+            .expectErrorMatches(throwable -> throwable instanceof BadRequestException)
+            .verify();
+    }
+
+    @Test
+    void createAccount_RejectsFixedTermAccountForVipCustomer() {
+        AccountRequest request = new AccountRequest();
+        request.setAccountType(AccountType.FIXED_TERM.toString());
+        request.setCustomerId("123");
+        request.setHolders(new ArrayList<>());
+        request.setSigners(new ArrayList<>());
+
+        CustomerResponse customer = new CustomerResponse();
+        customer.setId("123");
+        customer.setType(CustomerType.PERSONAL.toString());
+        customer.setStatus(CustomerStatus.ACTIVE.toString());
+        customer.setSubType(PersonalCustomerType.VIP.toString());
+
+        Account account = new Account();
+        account.setId("1");
+        account.setAccountNumber("ACC-123");
+        account.setAccountType(AccountType.SAVINGS);
+        account.setCustomerId("123");
+        account.setStatus(AccountStatus.ACTIVE);
+
+        AccountResponse response = new AccountResponse();
+        response.setId("1");
+        response.setAccountNumber("ACC-123");
+        response.setAccountType(AccountType.SAVINGS.toString());
+        response.setCustomerId("123");
+        response.setStatus(AccountStatus.ACTIVE.toString());
+
+        List<CreditCardResponse> creditCardResponses = new ArrayList<>();
+        CreditCardResponse creditCardResponse = new CreditCardResponse();
+        creditCardResponse.setCardNumber("123456789101");
+        creditCardResponse.setId("1");
+        creditCardResponses.add(creditCardResponse);
+        Flux<CreditCardResponse> creditCardResponseFlux = Flux.fromIterable(creditCardResponses);
+
+        when(customerService.getCustomerById("123")).thenReturn(Mono.just(customer));
+        when(accountFactory.getAccount(any(), any())).thenReturn(account);
+        when(accountRepository.findByCustomerId("123")).thenReturn(Flux.empty());
+        when(accountRepository.save(any())).thenReturn(Mono.just(account));
+        when(accountMapper.getAccountResponse(account)).thenReturn(response);
+        when(creditCardService.getCustomerCreditCards("123")).thenReturn(creditCardResponseFlux);
+
+        StepVerifier.create(accountService.createAccount(Mono.just(request)))
+            .expectErrorMatches(throwable -> throwable instanceof BadRequestException)
+            .verify();
+    }
+
+    @Test
     void createAccount_RejectsCheckingAccountForPymeBusinessWithNoCreditCards() {
         AccountRequest request = new AccountRequest();
         request.setAccountType(AccountType.CHECKING.toString());

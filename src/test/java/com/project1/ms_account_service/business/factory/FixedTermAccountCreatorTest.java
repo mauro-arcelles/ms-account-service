@@ -70,7 +70,7 @@ class FixedTermAccountCreatorTest {
         assertEquals(12, fixedTermAccount.getTermInMonths());
         assertNotNull(fixedTermAccount.getAvailableDayForMovements());
         assertNotNull(fixedTermAccount.getEndDay());
-        assertEquals(0.0, fixedTermAccount.getMaintenanceFee());
+        assertEquals(BigDecimal.ZERO, fixedTermAccount.getMaintenanceFee());
         assertNotNull(fixedTermAccount.getMaxMonthlyMovementsNoFee());
         assertNotNull(fixedTermAccount.getTransactionCommissionFeePercentage());
         assertEquals(0, fixedTermAccount.getMonthlyMovements());

@@ -169,6 +169,7 @@ components:
           type: string
         initialBalance:
           type: number
+          minimum: 0
         customerId:
           type: string
         holders:
@@ -257,7 +258,6 @@ components:
           type: integer
         maintenanceFee:
           type: number
-          format: double
         endDay:
           type: string
           format: date-time

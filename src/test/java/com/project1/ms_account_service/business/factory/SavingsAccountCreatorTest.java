@@ -66,7 +66,7 @@ class SavingsAccountCreatorTest {
 
         assertInstanceOf(SavingsAccount.class, account);
         SavingsAccount savingsAccount = (SavingsAccount) account;
-        assertEquals(0.0, savingsAccount.getMaintenanceFee());
+        assertEquals(BigDecimal.ZERO, savingsAccount.getMaintenanceFee());
         assertNotNull(savingsAccount.getMaxMonthlyMovements());
         assertNotNull(savingsAccount.getMaxMonthlyMovementsNoFee());
         assertNotNull(savingsAccount.getTransactionCommissionFeePercentage());

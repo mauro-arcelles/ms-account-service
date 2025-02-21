@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 public class CheckingAccountCreator implements AccountCreator {
 
     @Value("${account.config.checking.maintenanceFee}")
-    private Double checkingAccountMaintenanceFee;
+    private BigDecimal checkingAccountMaintenanceFee;
 
     @Value("${account.config.checking.maxMonthlyMovementsNoFee}")
     private Integer checkingMaxMonthlyMovementsNoFee;
