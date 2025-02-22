@@ -160,6 +160,26 @@ paths:
         '500':
           description: Internal server error
 
+  /accounts/debit-card:
+    post:
+      operationId: createDebitCard
+      summary: Create new debit card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebitCardCreationRequest'
+      responses:
+        '201':
+          description: Debit card created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardCreationResponse'
+        '500':
+          description: Internal server error
+
 components:
   schemas:
     AccountRequest:
@@ -329,3 +349,32 @@ components:
       properties:
         balance:
           type: number
+
+    DebitCardCreationRequest:
+      type: object
+      properties:
+        accountId:
+          type: string
+        customerId:
+          type: string
+      required:
+        - accountId
+        - customerId
+
+    DebitCardCreationResponse:
+      type: object
+      properties:
+        cardNumber:
+          type: string
+        associations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DebitCardAssociation'
+
+    DebitCardAssociation:
+      type: object
+      properties:
+        accountId:
+          type: string
+        position:
+          type: integer
