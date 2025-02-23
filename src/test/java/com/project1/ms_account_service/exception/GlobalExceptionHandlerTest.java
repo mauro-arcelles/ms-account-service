@@ -126,4 +126,17 @@ class GlobalExceptionHandlerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
     }
+
+    @Test
+    void handleNotFoundException_ShouldReturnNotFoundStatus() {
+        NotFoundException ex = new NotFoundException("Not found");
+
+        ResponseEntity<ResponseBase> response = handler.handleNotFoundException(ex)
+            .block();
+
+        assertNotNull(response);
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Not found", response.getBody().getMessage());
+    }
 }

@@ -2,6 +2,7 @@ package com.project1.ms_account_service.business.mapper;
 
 import com.project1.ms_account_service.model.DebitCardCreationRequest;
 import com.project1.ms_account_service.model.DebitCardCreationResponse;
+import com.project1.ms_account_service.model.DebitCardResponse;
 import com.project1.ms_account_service.model.entity.DebitCard;
 import com.project1.ms_account_service.model.entity.DebitCardAssociation;
 import org.junit.jupiter.api.Test;
@@ -63,5 +64,28 @@ public class DebitCardMapperTest {
 
         assertEquals("123", result.getAccountId());
         assertEquals(1, result.getPosition());
+    }
+
+    @Test
+    void getDebitCardResponse_ShouldMapCorrectly() {
+        DebitCardMapper mapper = new DebitCardMapper();
+
+        DebitCardAssociation association = new DebitCardAssociation();
+        association.setAccountId("123");
+        association.setPosition(1);
+
+        DebitCard debitCard = DebitCard.builder()
+            .cardNumber("4111111111111111")
+            .customerId("customer123")
+            .associations(Collections.singletonList(association))
+            .build();
+
+        DebitCardResponse response = mapper.getDebitCardResponse(debitCard);
+
+        assertEquals("4111111111111111", response.getCardNumber());
+        assertEquals("customer123", response.getCustomerId());
+        assertEquals(1, response.getAssociations().size());
+        assertEquals("123", response.getAssociations().get(0).getAccountId());
+        assertEquals(1, response.getAssociations().get(0).getPosition());
     }
 }
