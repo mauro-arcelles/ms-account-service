@@ -52,6 +52,11 @@ public class DebitCardMapper {
         DebitCardResponse response = new DebitCardResponse();
         response.setCardNumber(debitCard.getCardNumber());
         response.setCustomerId(debitCard.getCustomerId());
+        response.setAssociations(
+            debitCard.getAssociations().stream()
+                .map(this::getDebitCardAssociationResponse)
+                .collect(Collectors.toList())
+        );
         return response;
     }
 }

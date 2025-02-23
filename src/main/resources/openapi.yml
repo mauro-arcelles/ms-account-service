@@ -435,6 +435,10 @@ components:
           type: string
         customerId:
           type: string
+        associations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DebitCardAssociation'
 
     DebitCardAssociation:
       type: object
