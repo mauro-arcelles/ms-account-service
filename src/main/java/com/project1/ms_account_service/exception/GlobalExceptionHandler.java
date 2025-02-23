@@ -44,15 +44,6 @@ public class GlobalExceptionHandler {
             .body("Internal Server Error"));
     }
 
-    @ExceptionHandler(CustomerNotFoundException.class)
-    public Mono<ResponseEntity<ResponseBase>> handleCustomerNotFoundException(Exception ex) {
-        log.error("Error", ex);
-        ResponseBase responseBase = new ResponseBase();
-        responseBase.setMessage(ex.getMessage());
-        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(responseBase));
-    }
-
     @ExceptionHandler(InvalidAccountTypeException.class)
     public Mono<ResponseEntity<ResponseBase>> handleInvalidAccountTypeException(Exception ex) {
         log.error("Error", ex);
@@ -62,21 +53,21 @@ public class GlobalExceptionHandler {
             .body(responseBase));
     }
 
-    @ExceptionHandler(AccountNotFoundException.class)
-    public Mono<ResponseEntity<ResponseBase>> handleAccountNotFoundException(Exception ex) {
-        log.error("Error", ex);
-        ResponseBase responseBase = new ResponseBase();
-        responseBase.setMessage(ex.getMessage());
-        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(responseBase));
-    }
-
     @ExceptionHandler(BadRequestException.class)
     public Mono<ResponseEntity<ResponseBase>> handleBadRequestException(Exception ex) {
         log.error("Error", ex);
         ResponseBase responseBase = new ResponseBase();
         responseBase.setMessage(ex.getMessage());
         return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(responseBase));
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public Mono<ResponseEntity<ResponseBase>> handleNotFoundException(Exception ex) {
+        log.error("Error", ex);
+        ResponseBase responseBase = new ResponseBase();
+        responseBase.setMessage(ex.getMessage());
+        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(responseBase));
     }
 

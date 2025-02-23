@@ -2,6 +2,7 @@ package com.project1.ms_account_service.business.service;
 
 import com.project1.ms_account_service.business.mapper.DebitCardMapper;
 import com.project1.ms_account_service.exception.BadRequestException;
+import com.project1.ms_account_service.exception.NotFoundException;
 import com.project1.ms_account_service.model.DebitCardCreationRequest;
 import com.project1.ms_account_service.model.DebitCardCreationResponse;
 import com.project1.ms_account_service.model.DebitCardResponse;
@@ -53,13 +54,13 @@ public class DebitCardServiceImpl implements DebitCardService {
     @Override
     public Mono<DebitCardResponse> getDebitCardById(String debitCardId) {
         return debitCardRepository.findById(debitCardId)
-            .switchIfEmpty(Mono.error(new BadRequestException("Debit card not found with id: " + debitCardId)))
+            .switchIfEmpty(Mono.error(new NotFoundException("Debit card not found with id: " + debitCardId)))
             .map(debitCardMapper::getDebitCardResponse);
     }
 
     private Mono<DebitCard> validateDebitCardAssociationEntities(DebitCardCreationRequest req, String debitCardId) {
         return debitCardRepository.findById(debitCardId)
-            .switchIfEmpty(Mono.error(new BadRequestException("Debit card not found with id: " + debitCardId)))
+            .switchIfEmpty(Mono.error(new NotFoundException("Debit card not found with id: " + debitCardId)))
             .flatMap(debitCard ->
                 accountService.getAccountById(req.getAccountId())
                     .flatMap(accountResponse -> {

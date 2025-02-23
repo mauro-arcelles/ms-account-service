@@ -4,9 +4,9 @@ import com.project1.ms_account_service.business.adapter.CreditCardService;
 import com.project1.ms_account_service.business.adapter.CustomerService;
 import com.project1.ms_account_service.business.factory.AccountFactory;
 import com.project1.ms_account_service.business.mapper.AccountMapper;
-import com.project1.ms_account_service.exception.AccountNotFoundException;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.InvalidAccountTypeException;
+import com.project1.ms_account_service.exception.NotFoundException;
 import com.project1.ms_account_service.model.*;
 import com.project1.ms_account_service.model.AccountMember;
 import com.project1.ms_account_service.model.entity.*;
@@ -105,7 +105,7 @@ public class AccountServiceImplTest {
         when(accountRepository.findByAccountNumber(accountNumber)).thenReturn(Mono.empty());
 
         StepVerifier.create(accountService.getAccountByAccountNumber(accountNumber))
-            .expectError(AccountNotFoundException.class)
+            .expectError(NotFoundException.class)
             .verify();
     }
 
@@ -713,7 +713,7 @@ public class AccountServiceImplTest {
         when(accountRepository.findByAccountNumber("12345")).thenReturn(Mono.empty());
 
         StepVerifier.create(accountService.getAccountBalanceByAccountNumber("12345"))
-            .expectError(AccountNotFoundException.class)
+            .expectError(NotFoundException.class)
             .verify();
     }
 
@@ -759,7 +759,7 @@ public class AccountServiceImplTest {
         when(accountRepository.findById(id)).thenReturn(Mono.empty());
 
         StepVerifier.create(accountService.updateAccount(id, Mono.just(request)))
-            .expectError(AccountNotFoundException.class)
+            .expectError(NotFoundException.class)
             .verify();
     }
 }

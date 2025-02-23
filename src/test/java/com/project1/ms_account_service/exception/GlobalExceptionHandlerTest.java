@@ -30,19 +30,6 @@ class GlobalExceptionHandlerTest {
     private GlobalExceptionHandler handler;
 
     @Test
-    void handleCustomerNotFoundException() {
-        CustomerNotFoundException ex = new CustomerNotFoundException("Customer not found");
-
-        ResponseEntity<ResponseBase> response = handler.handleCustomerNotFoundException(ex)
-            .block();
-
-        assertNotNull(response);
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("Customer not found", response.getBody().getMessage());
-    }
-
-    @Test
     void handleWebExchangeBindException() {
         MethodParameter methodParameter = new MethodParameter(
             this.getClass().getDeclaredMethods()[0], -1);
@@ -70,17 +57,6 @@ class GlobalExceptionHandlerTest {
 
         assertNotNull(response);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-    }
-
-    @Test
-    void handleAccountNotFoundException() {
-        AccountNotFoundException ex = new AccountNotFoundException("Account not found");
-
-        ResponseEntity<ResponseBase> response = handler.handleAccountNotFoundException(ex)
-            .block();
-
-        assertNotNull(response);
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
     }
 
     @Test

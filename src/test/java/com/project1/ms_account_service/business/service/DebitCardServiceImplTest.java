@@ -2,6 +2,7 @@ package com.project1.ms_account_service.business.service;
 
 import com.project1.ms_account_service.business.mapper.DebitCardMapper;
 import com.project1.ms_account_service.exception.BadRequestException;
+import com.project1.ms_account_service.exception.NotFoundException;
 import com.project1.ms_account_service.model.AccountResponse;
 import com.project1.ms_account_service.model.DebitCardCreationRequest;
 import com.project1.ms_account_service.model.DebitCardCreationResponse;
@@ -88,7 +89,7 @@ public class DebitCardServiceImplTest {
         when(debitCardRepository.findById(debitCardId)).thenReturn(Mono.empty());
 
         StepVerifier.create(debitCardService.createDebitCardAssociation(debitCardId, Mono.just(request)))
-            .expectError(BadRequestException.class)
+            .expectError(NotFoundException.class)
             .verify();
     }
 
