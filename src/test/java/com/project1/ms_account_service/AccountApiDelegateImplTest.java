@@ -1,12 +1,11 @@
 package com.project1.ms_account_service;
 
 import com.project1.ms_account_service.business.AccountMapper;
-import com.project1.ms_account_service.business.AccountService;
+import com.project1.ms_account_service.business.service.AccountService;
 import com.project1.ms_account_service.model.AccountBalanceResponse;
 import com.project1.ms_account_service.model.AccountPatchRequest;
 import com.project1.ms_account_service.model.AccountRequest;
 import com.project1.ms_account_service.model.AccountResponse;
-import com.project1.ms_account_service.model.entity.Account;
 import com.project1.ms_account_service.model.entity.AccountStatus;
 import com.project1.ms_account_service.repository.AccountRepository;
 import org.junit.jupiter.api.Test;

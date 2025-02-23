@@ -1,7 +1,8 @@
 package com.project1.ms_account_service;
 
 import com.project1.ms_account_service.api.AccountsApiDelegate;
-import com.project1.ms_account_service.business.AccountService;
+import com.project1.ms_account_service.business.service.AccountService;
+import com.project1.ms_account_service.business.service.DebitCardService;
 import com.project1.ms_account_service.model.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,9 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private DebitCardService debitCardService;
 
     @Override
     public Mono<ResponseEntity<AccountResponse>> getAccountById(String id, ServerWebExchange exchange) {
@@ -56,5 +60,19 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     public Mono<ResponseEntity<Void>> deleteAccountById(String id, ServerWebExchange exchange) {
         return accountService.deleteAccount(id)
                 .map(ResponseEntity::ok);
+    }
+
+    @Override
+    public Mono<ResponseEntity<DebitCardCreationResponse>> createDebitCard(Mono<DebitCardCreationRequest> debitCardCreationRequest, ServerWebExchange exchange) {
+        return debitCardService.createDebitCard(debitCardCreationRequest)
+                .map(ResponseEntity.status(HttpStatus.CREATED)::body);
+    }
+
+    @Override
+    public Mono<ResponseEntity<DebitCardCreationResponse>> createDebitCardAssociation(String cardNumber,
+                                                                                      Mono<DebitCardCreationRequest> debitCardCreationRequest,
+                                                                                      ServerWebExchange exchange) {
+        return debitCardService.createDebitCardAssociation(cardNumber, debitCardCreationRequest)
+                .map(ResponseEntity.status(HttpStatus.CREATED)::body);
     }
 }

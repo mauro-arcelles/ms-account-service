@@ -180,6 +180,36 @@ paths:
         '500':
           description: Internal server error
 
+  /accounts/debit-card/associate/{debidCardId}:
+    post:
+      operationId: createDebitCardAssociation
+      summary: Create new debit card association
+      parameters:
+        - name: debidCardId
+          in: path
+          required: true
+          schema:
+              type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DebitCardCreationRequest'
+      responses:
+        '201':
+          description: Debit card association created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardCreationResponse'
+        '404':
+          description: Debit card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBase'
+
 components:
   schemas:
     AccountRequest:
@@ -355,8 +385,7 @@ components:
       properties:
         accountId:
           type: string
-        customerId:
-          type: string
+          x-field-extra-annotation: "@javax.validation.constraints.Size(min = 1, message = \"Account id is required\")"
       required:
         - accountId
         - customerId
@@ -365,6 +394,8 @@ components:
       type: object
       properties:
         cardNumber:
+          type: string
+        customerId:
           type: string
         associations:
           type: array

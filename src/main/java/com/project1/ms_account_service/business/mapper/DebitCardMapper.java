@@ -24,7 +24,6 @@ public class DebitCardMapper {
 
         return DebitCard.builder()
             .cardNumber(DebitCard.generateDebitCardNumber())
-            .customerId(request.getCustomerId())
             .associations(debitCardAssociations)
             .build();
     }
@@ -37,6 +36,7 @@ public class DebitCardMapper {
                 .collect(Collectors.toList())
         );
         response.setCardNumber(debitCard.getCardNumber());
+        response.setCustomerId(debitCard.getCustomerId());
         return response;
     }
 

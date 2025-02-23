@@ -6,4 +6,6 @@ import reactor.core.publisher.Mono;
 
 public interface DebitCardService {
     Mono<DebitCardCreationResponse> createDebitCard(Mono<DebitCardCreationRequest> request);
+
+    Mono<DebitCardCreationResponse> createDebitCardAssociation(String debitCardId, Mono<DebitCardCreationRequest> request);
 }

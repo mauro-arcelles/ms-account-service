@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Random;
 
 @Data
-@Document(collection = "accounts")
+@Document(collection = "debit-cards")
 @NoArgsConstructor
 @AllArgsConstructor
 @SuperBuilder(toBuilder = true)
