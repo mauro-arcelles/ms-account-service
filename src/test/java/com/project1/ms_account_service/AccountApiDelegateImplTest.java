@@ -1,11 +1,9 @@
 package com.project1.ms_account_service;
 
-import com.project1.ms_account_service.business.AccountMapper;
+import com.project1.ms_account_service.business.mapper.AccountMapper;
 import com.project1.ms_account_service.business.service.AccountService;
-import com.project1.ms_account_service.model.AccountBalanceResponse;
-import com.project1.ms_account_service.model.AccountPatchRequest;
-import com.project1.ms_account_service.model.AccountRequest;
-import com.project1.ms_account_service.model.AccountResponse;
+import com.project1.ms_account_service.business.service.DebitCardService;
+import com.project1.ms_account_service.model.*;
 import com.project1.ms_account_service.model.entity.AccountStatus;
 import com.project1.ms_account_service.repository.AccountRepository;
 import org.junit.jupiter.api.Test;
@@ -24,6 +22,9 @@ import static org.mockito.Mockito.*;
 public class AccountApiDelegateImplTest {
     @MockBean
     private AccountService accountService;
+
+    @MockBean
+    private DebitCardService debitCardService;
 
     @MockBean
     private AccountRepository accountRepository;
@@ -112,6 +113,28 @@ public class AccountApiDelegateImplTest {
 
         StepVerifier.create(accountApiDelegate.updateAccountById("1", Mono.just(patchRequest), null))
             .expectNext(ResponseEntity.ok(accountResponse))
+            .verifyComplete();
+    }
+
+    @Test
+    void createCreditCard_Success() {
+        DebitCardCreationRequest request = new DebitCardCreationRequest();
+        DebitCardCreationResponse response = new DebitCardCreationResponse();
+        when(debitCardService.createDebitCard(any())).thenReturn(Mono.just(response));
+
+        StepVerifier.create(accountApiDelegate.createDebitCard(Mono.just(request), null))
+            .expectNext(ResponseEntity.status(HttpStatus.CREATED).body(response))
+            .verifyComplete();
+    }
+
+    @Test
+    void createCreditCardAssociation_Success() {
+        DebitCardCreationRequest request = new DebitCardCreationRequest();
+        DebitCardCreationResponse response = new DebitCardCreationResponse();
+        when(debitCardService.createDebitCardAssociation(anyString(), any())).thenReturn(Mono.just(response));
+
+        StepVerifier.create(accountApiDelegate.createDebitCardAssociation("123", Mono.just(request), null))
+            .expectNext(ResponseEntity.status(HttpStatus.CREATED).body(response))
             .verifyComplete();
     }
 

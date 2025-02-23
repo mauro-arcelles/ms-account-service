@@ -24,13 +24,13 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     @Override
     public Mono<ResponseEntity<AccountResponse>> getAccountById(String id, ServerWebExchange exchange) {
         return accountService.getAccountById(id)
-                .map(ResponseEntity::ok);
+            .map(ResponseEntity::ok);
     }
 
     @Override
     public Mono<ResponseEntity<AccountResponse>> getAccountByAccountNumber(String accountNumber, ServerWebExchange exchange) {
         return accountService.getAccountByAccountNumber(accountNumber)
-                .map(ResponseEntity::ok);
+            .map(ResponseEntity::ok);
     }
 
     @Override
@@ -41,31 +41,32 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     @Override
     public Mono<ResponseEntity<AccountResponse>> createAccount(Mono<AccountRequest> request, ServerWebExchange exchange) {
         return accountService.createAccount(request)
-                .map(ResponseEntity.status(HttpStatus.CREATED)::body);
+            .map(ResponseEntity.status(HttpStatus.CREATED)::body);
     }
 
     @Override
     public Mono<ResponseEntity<AccountBalanceResponse>> getAccountBalance(String accountNumber, ServerWebExchange exchange) {
         return accountService.getAccountBalanceByAccountNumber(accountNumber)
-                .map(ResponseEntity::ok);
+            .map(ResponseEntity::ok);
     }
 
     @Override
     public Mono<ResponseEntity<AccountResponse>> updateAccountById(String id, Mono<AccountPatchRequest> accountPatchRequest, ServerWebExchange exchange) {
         return accountService.updateAccount(id, accountPatchRequest)
-                .map(ResponseEntity::ok);
+            .map(ResponseEntity::ok);
     }
 
     @Override
     public Mono<ResponseEntity<Void>> deleteAccountById(String id, ServerWebExchange exchange) {
         return accountService.deleteAccount(id)
-                .map(ResponseEntity::ok);
+            .map(ResponseEntity::ok);
     }
 
     @Override
-    public Mono<ResponseEntity<DebitCardCreationResponse>> createDebitCard(Mono<DebitCardCreationRequest> debitCardCreationRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<DebitCardCreationResponse>> createDebitCard(Mono<DebitCardCreationRequest> debitCardCreationRequest,
+                                                                           ServerWebExchange exchange) {
         return debitCardService.createDebitCard(debitCardCreationRequest)
-                .map(ResponseEntity.status(HttpStatus.CREATED)::body);
+            .map(ResponseEntity.status(HttpStatus.CREATED)::body);
     }
 
     @Override
@@ -73,6 +74,6 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
                                                                                       Mono<DebitCardCreationRequest> debitCardCreationRequest,
                                                                                       ServerWebExchange exchange) {
         return debitCardService.createDebitCardAssociation(cardNumber, debitCardCreationRequest)
-                .map(ResponseEntity.status(HttpStatus.CREATED)::body);
+            .map(ResponseEntity.status(HttpStatus.CREATED)::body);
     }
 }

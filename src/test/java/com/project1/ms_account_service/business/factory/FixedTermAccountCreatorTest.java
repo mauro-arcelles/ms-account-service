@@ -1,6 +1,6 @@
 package com.project1.ms_account_service.business.factory;
 
-import com.project1.ms_account_service.business.AccountMapper;
+import com.project1.ms_account_service.business.mapper.AccountMapper;
 import com.project1.ms_account_service.model.entity.*;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

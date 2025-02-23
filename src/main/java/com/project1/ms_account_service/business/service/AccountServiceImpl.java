@@ -1,6 +1,6 @@
 package com.project1.ms_account_service.business.service;
 
-import com.project1.ms_account_service.business.AccountMapper;
+import com.project1.ms_account_service.business.mapper.AccountMapper;
 import com.project1.ms_account_service.business.adapter.CreditCardService;
 import com.project1.ms_account_service.business.adapter.CustomerService;
 import com.project1.ms_account_service.business.factory.AccountFactory;
