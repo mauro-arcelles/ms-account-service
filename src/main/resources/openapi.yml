@@ -180,6 +180,32 @@ paths:
         '500':
           description: Internal server error
 
+  /accounts/debit-card/{debitCardId}:
+    get:
+      operationId: getDebitCardById
+      summary: Get debit card by id
+      parameters:
+        - name: debitCardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Debit card found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardResponse'
+        '404':
+          description: Debit card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBase'
+        '500':
+          description: Internal server error
+
   /accounts/debit-card/associate/{debidCardId}:
     post:
       operationId: createDebitCardAssociation
@@ -189,7 +215,7 @@ paths:
           in: path
           required: true
           schema:
-              type: string
+            type: string
       requestBody:
         required: true
         content:
@@ -401,6 +427,14 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DebitCardAssociation'
+
+    DebitCardResponse:
+      type: object
+      properties:
+        cardNumber:
+          type: string
+        customerId:
+          type: string
 
     DebitCardAssociation:
       type: object

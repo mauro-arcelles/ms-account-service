@@ -2,6 +2,7 @@ package com.project1.ms_account_service.business.mapper;
 
 import com.project1.ms_account_service.model.DebitCardCreationRequest;
 import com.project1.ms_account_service.model.DebitCardCreationResponse;
+import com.project1.ms_account_service.model.DebitCardResponse;
 import com.project1.ms_account_service.model.entity.DebitCard;
 import com.project1.ms_account_service.model.entity.DebitCardAssociation;
 import org.springframework.stereotype.Component;
@@ -44,6 +45,13 @@ public class DebitCardMapper {
         com.project1.ms_account_service.model.DebitCardAssociation response = new com.project1.ms_account_service.model.DebitCardAssociation();
         response.setAccountId(debitCardAssociation.getAccountId());
         response.setPosition(debitCardAssociation.getPosition());
+        return response;
+    }
+
+    public DebitCardResponse getDebitCardResponse(DebitCard debitCard) {
+        DebitCardResponse response = new DebitCardResponse();
+        response.setCardNumber(debitCard.getCardNumber());
+        response.setCustomerId(debitCard.getCustomerId());
         return response;
     }
 }
