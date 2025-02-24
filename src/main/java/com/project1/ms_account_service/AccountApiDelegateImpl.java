@@ -70,16 +70,22 @@ public class AccountApiDelegateImpl implements AccountsApiDelegate {
     }
 
     @Override
-    public Mono<ResponseEntity<DebitCardCreationResponse>> createDebitCardAssociation(String cardNumber,
+    public Mono<ResponseEntity<DebitCardCreationResponse>> createDebitCardAssociation(String debitCardId,
                                                                                       Mono<DebitCardCreationRequest> debitCardCreationRequest,
                                                                                       ServerWebExchange exchange) {
-        return debitCardService.createDebitCardAssociation(cardNumber, debitCardCreationRequest)
+        return debitCardService.createDebitCardAssociation(debitCardId, debitCardCreationRequest)
             .map(ResponseEntity.status(HttpStatus.CREATED)::body);
     }
 
     @Override
     public Mono<ResponseEntity<DebitCardResponse>> getDebitCardById(String debitCardId, ServerWebExchange exchange) {
         return debitCardService.getDebitCardById(debitCardId)
+            .map(ResponseEntity::ok);
+    }
+
+    @Override
+    public Mono<ResponseEntity<DebitCardBalanceResponse>> getDebitCardPrimaryBalanceById(String debitCardId, ServerWebExchange exchange) {
+        return debitCardService.getDebitCardPrimaryAccountBalance(debitCardId)
             .map(ResponseEntity::ok);
     }
 }

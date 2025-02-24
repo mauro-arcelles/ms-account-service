@@ -180,6 +180,32 @@ paths:
         '500':
           description: Internal server error
 
+  /accounts/debit-card/primary-balance/{debitCardId}:
+    get:
+      operationId: getDebitCardPrimaryBalanceById
+      summary: Get balance of the primary account associated to debit card
+      parameters:
+        - name: debitCardId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Debit card balance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DebitCardBalanceResponse'
+        '404':
+          description: Debit card not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBase'
+        '500':
+          description: Internal server error
+
   /accounts/debit-card/{debitCardId}:
     get:
       operationId: getDebitCardById
@@ -206,12 +232,12 @@ paths:
         '500':
           description: Internal server error
 
-  /accounts/debit-card/associate/{debidCardId}:
+  /accounts/debit-card/associate/{debitCardId}:
     post:
       operationId: createDebitCardAssociation
       summary: Create new debit card association
       parameters:
-        - name: debidCardId
+        - name: debitCardId
           in: path
           required: true
           schema:
@@ -447,3 +473,9 @@ components:
           type: string
         position:
           type: integer
+
+    DebitCardBalanceResponse:
+      type: object
+      properties:
+        balance:
+          type: number

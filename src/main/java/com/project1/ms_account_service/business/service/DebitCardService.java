@@ -1,5 +1,6 @@
 package com.project1.ms_account_service.business.service;
 
+import com.project1.ms_account_service.model.DebitCardBalanceResponse;
 import com.project1.ms_account_service.model.DebitCardCreationRequest;
 import com.project1.ms_account_service.model.DebitCardCreationResponse;
 import com.project1.ms_account_service.model.DebitCardResponse;
@@ -11,4 +12,6 @@ public interface DebitCardService {
     Mono<DebitCardCreationResponse> createDebitCardAssociation(String debitCardId, Mono<DebitCardCreationRequest> request);
 
     Mono<DebitCardResponse> getDebitCardById(String debitCardId);
+
+    Mono<DebitCardBalanceResponse> getDebitCardPrimaryAccountBalance(String debitCardId);
 }

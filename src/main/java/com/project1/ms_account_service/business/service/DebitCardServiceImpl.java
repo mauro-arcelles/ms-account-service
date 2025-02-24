@@ -3,6 +3,7 @@ package com.project1.ms_account_service.business.service;
 import com.project1.ms_account_service.business.mapper.DebitCardMapper;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.NotFoundException;
+import com.project1.ms_account_service.model.DebitCardBalanceResponse;
 import com.project1.ms_account_service.model.DebitCardCreationRequest;
 import com.project1.ms_account_service.model.DebitCardCreationResponse;
 import com.project1.ms_account_service.model.DebitCardResponse;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -58,6 +60,25 @@ public class DebitCardServiceImpl implements DebitCardService {
             .map(debitCardMapper::getDebitCardResponse);
     }
 
+    @Override
+    public Mono<DebitCardBalanceResponse> getDebitCardPrimaryAccountBalance(String debitCardId) {
+        return debitCardRepository.findById(debitCardId)
+            .switchIfEmpty(Mono.error(new NotFoundException("Debit card not found with id: " + debitCardId)))
+            .flatMap(debitCard -> {
+                String primaryAccountId = debitCard.getAssociations().stream()
+                    .min(Comparator.comparing(DebitCardAssociation::getPosition))
+                    .map(DebitCardAssociation::getAccountId)
+                    .orElseThrow();
+
+                return accountService.getAccountById(primaryAccountId);
+            })
+            .map(accountResponse -> {
+                DebitCardBalanceResponse debitCardBalanceResponse = new DebitCardBalanceResponse();
+                debitCardBalanceResponse.setBalance(accountResponse.getBalance());
+                return debitCardBalanceResponse;
+            });
+    }
+
     private Mono<DebitCard> validateDebitCardAssociationEntities(DebitCardCreationRequest req, String debitCardId) {
         return debitCardRepository.findById(debitCardId)
             .switchIfEmpty(Mono.error(new NotFoundException("Debit card not found with id: " + debitCardId)))
@@ -67,7 +88,7 @@ public class DebitCardServiceImpl implements DebitCardService {
                         if (accountResponse.getCustomerId() != null) {
                             if (!accountResponse.getCustomerId().equals(debitCard.getCustomerId())) {
                                 return Mono.error(
-                                    new BadRequestException("Cannot associate. Account does not belong to the customer associated with the debit card"));
+                                    new BadRequestException("Cannot associate. Provided ACCOUNT does not belong to the CUSTOMER who owns the debit card"));
                             }
                         }
                         return Mono.just(accountResponse);
