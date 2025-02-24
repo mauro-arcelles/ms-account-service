@@ -49,19 +49,19 @@ public class CreditCardServiceImpl implements CreditCardService {
             .bodyToFlux(CreditCardResponse.class);
     }
 
-    private Flux<CustomerResponse> getCustomerCreditCardsFallback(String id, InternalServerErrorException e) {
+    private Flux<CreditCardResponse> getCustomerCreditCardsFallback(String id, InternalServerErrorException e) {
         return Flux.error(new BadRequestException("Credit service unavailable. Retry again later"));
     }
 
-    private Flux<CustomerResponse> getCustomerCreditCardsFallback(String id, TimeoutException e) {
+    private Flux<CreditCardResponse> getCustomerCreditCardsFallback(String id, TimeoutException e) {
         return Flux.error(new BadRequestException("Credit service unavailable. Retry again later"));
     }
 
-    private Flux<CustomerResponse> getCustomerCreditCardsFallback(String id, CallNotPermittedException e) {
+    private Flux<CreditCardResponse> getCustomerCreditCardsFallback(String id, CallNotPermittedException e) {
         return Flux.error(new BadRequestException("Credit service unavailable. Retry again later"));
     }
 
-    private Flux<CustomerResponse> getCustomerCreditCardsFallback(String id, WebClientRequestException e) {
+    private Flux<CreditCardResponse> getCustomerCreditCardsFallback(String id, WebClientRequestException e) {
         return Flux.error(new BadRequestException("Credit service unavailable. Retry again later"));
     }
 }
