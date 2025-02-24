@@ -41,7 +41,7 @@ public class GlobalExceptionHandler {
     public Mono<ResponseEntity<String>> handleGenericError(Exception ex) {
         log.error("Error", ex);
         return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body("Internal Server Error"));
+            .body(ex.getMessage()));
     }
 
     @ExceptionHandler(InvalidAccountTypeException.class)
