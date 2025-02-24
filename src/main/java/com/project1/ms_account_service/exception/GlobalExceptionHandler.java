@@ -71,6 +71,15 @@ public class GlobalExceptionHandler {
             .body(responseBase));
     }
 
+    @ExceptionHandler(InternalServerErrorException.class)
+    public Mono<ResponseEntity<ResponseBase>> handleInternalServerErrorException(Exception ex) {
+        log.error("Error", ex);
+        ResponseBase responseBase = new ResponseBase();
+        responseBase.setMessage(ex.getMessage());
+        return Mono.just(ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(responseBase));
+    }
+
     @ExceptionHandler(ServerWebInputException.class)
     public Mono<ResponseEntity<Map<String, List<String>>>> handleServerWebInputException(ServerWebInputException ex) {
         log.error("Error", ex);
