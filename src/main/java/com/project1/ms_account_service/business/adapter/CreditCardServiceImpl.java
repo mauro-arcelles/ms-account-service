@@ -1,6 +1,7 @@
 package com.project1.ms_account_service.business.adapter;
 
 import com.project1.ms_account_service.exception.BadRequestException;
+import com.project1.ms_account_service.exception.NotFoundException;
 import com.project1.ms_account_service.model.CreditCardResponse;
 import com.project1.ms_account_service.model.ResponseBase;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +22,16 @@ public class CreditCardServiceImpl implements CreditCardService {
     @Override
     public Flux<CreditCardResponse> getCustomerCreditCards(String customerId) {
         return webClient.get()
-                .uri("/credit-card/by-customer/{customerId}", customerId)
-                .retrieve()
-                .onStatus(HttpStatus::is4xxClientError, response ->
-                        response.bodyToMono(ResponseBase.class)
-                                .flatMap(error ->
-                                        Mono.error(new BadRequestException(error.getMessage()))
-                                )
-                )
-                .bodyToFlux(CreditCardResponse.class);
+            .uri("/credit-card/by-customer/{customerId}", customerId)
+            .retrieve()
+            .onStatus(HttpStatus::is4xxClientError, response ->
+                response.bodyToMono(ResponseBase.class)
+                    .flatMap(error -> Mono.error(
+                        response.statusCode().equals(HttpStatus.NOT_FOUND)
+                            ? new NotFoundException(error.getMessage())
+                            : new BadRequestException(error.getMessage())
+                    ))
+            )
+            .bodyToFlux(CreditCardResponse.class);
     }
 }
