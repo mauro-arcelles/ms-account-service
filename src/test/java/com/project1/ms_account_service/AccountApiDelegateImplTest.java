@@ -138,4 +138,24 @@ public class AccountApiDelegateImplTest {
             .verifyComplete();
     }
 
+    @Test
+    void getDebitCardById_Success() {
+        DebitCardResponse response = new DebitCardResponse();
+        when(debitCardService.getDebitCardById("1")).thenReturn(Mono.just(response));
+
+        StepVerifier.create(accountApiDelegate.getDebitCardById("1", null))
+            .expectNext(ResponseEntity.ok(response))
+            .verifyComplete();
+    }
+
+    @Test
+    void getDebitCardPrimaryBalanceById_Success() {
+        DebitCardBalanceResponse response = new DebitCardBalanceResponse();
+        when(debitCardService.getDebitCardPrimaryAccountBalance("1")).thenReturn(Mono.just(response));
+
+        StepVerifier.create(accountApiDelegate.getDebitCardPrimaryBalanceById("1", null))
+            .expectNext(ResponseEntity.ok(response))
+            .verifyComplete();
+    }
+
 }

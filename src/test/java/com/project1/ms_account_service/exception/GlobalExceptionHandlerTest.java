@@ -139,4 +139,18 @@ class GlobalExceptionHandlerTest {
                     response.getBody().getMessage().equals("Not found"))
             .verifyComplete();
     }
+
+    @Test
+    void handleInternalServerErrorException() {
+        InternalServerErrorException ex = new InternalServerErrorException("Internal server error");
+
+        StepVerifier.create(handler.handleInternalServerErrorException(ex))
+            .expectNextMatches(response ->
+                response != null &&
+                    response.getStatusCode() == HttpStatus.INTERNAL_SERVER_ERROR &&
+                    response.getBody() != null &&
+                    response.getBody().getMessage() != null &&
+                    response.getBody().getMessage().equals("Internal server error"))
+            .verifyComplete();
+    }
 }

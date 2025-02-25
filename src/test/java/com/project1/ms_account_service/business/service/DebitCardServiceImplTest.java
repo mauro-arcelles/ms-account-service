@@ -3,9 +3,7 @@ package com.project1.ms_account_service.business.service;
 import com.project1.ms_account_service.business.mapper.DebitCardMapper;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.NotFoundException;
-import com.project1.ms_account_service.model.AccountResponse;
-import com.project1.ms_account_service.model.DebitCardCreationRequest;
-import com.project1.ms_account_service.model.DebitCardCreationResponse;
+import com.project1.ms_account_service.model.*;
 import com.project1.ms_account_service.model.entity.DebitCard;
 import com.project1.ms_account_service.model.entity.DebitCardAssociation;
 import com.project1.ms_account_service.repository.DebitCardRepository;
@@ -16,6 +14,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -140,6 +139,65 @@ public class DebitCardServiceImplTest {
             .expectErrorMatches(throwable ->
                 throwable instanceof BadRequestException &&
                     throwable.getMessage().equals("Account is already associated with the debit card"))
+            .verify();
+    }
+
+    @Test
+    void getDebitCardById_Success() {
+        String debitCardId = "789";
+        DebitCard debitCard = new DebitCard();
+        DebitCardResponse response = new DebitCardResponse();
+
+        when(debitCardRepository.findById(debitCardId)).thenReturn(Mono.just(debitCard));
+        when(debitCardMapper.getDebitCardResponse(debitCard)).thenReturn(response);
+
+        StepVerifier.create(debitCardService.getDebitCardById(debitCardId))
+            .expectNext(response)
+            .verifyComplete();
+    }
+
+    @Test
+    void getDebitCardById_NotFound() {
+        String debitCardId = "789";
+        when(debitCardRepository.findById(debitCardId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(debitCardService.getDebitCardById(debitCardId))
+            .expectError(NotFoundException.class)
+            .verify();
+    }
+
+    @Test
+    void getDebitCardPrimaryAccountBalance_Success() {
+        String debitCardId = "789";
+        DebitCard debitCard = new DebitCard();
+        List<DebitCardAssociation> associations = new ArrayList<>();
+        associations.add(DebitCardAssociation.builder()
+            .accountId("123")
+            .position(1)
+            .build());
+        debitCard.setAssociations(associations);
+
+        AccountResponse accountResponse = new AccountResponse();
+        accountResponse.setBalance(BigDecimal.valueOf(100));
+
+        when(debitCardRepository.findById(debitCardId)).thenReturn(Mono.just(debitCard));
+        when(accountService.getAccountById("123")).thenReturn(Mono.just(accountResponse));
+
+        DebitCardBalanceResponse balanceResponse = new DebitCardBalanceResponse();
+        balanceResponse.setBalance(BigDecimal.valueOf(100));
+
+        StepVerifier.create(debitCardService.getDebitCardPrimaryAccountBalance(debitCardId))
+            .expectNext(balanceResponse)
+            .verifyComplete();
+    }
+
+    @Test
+    void getDebitCardPrimaryAccountBalance_NotFound() {
+        String debitCardId = "789";
+        when(debitCardRepository.findById(debitCardId)).thenReturn(Mono.empty());
+
+        StepVerifier.create(debitCardService.getDebitCardPrimaryAccountBalance(debitCardId))
+            .expectError(NotFoundException.class)
             .verify();
     }
 }
