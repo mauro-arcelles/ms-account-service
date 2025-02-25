@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
 @Component
 public class SavingsAccountCreator implements AccountCreator {
 
-    @Value("${account.config.savings.maxMonthlyMovements}")
+    @Value("${application.config.accounts.savings.maxMonthlyMovements}")
     private Integer savingsMaxMonthlyMovements;
 
-    @Value("${account.config.savings.maxMonthlyMovementsNoFee}")
+    @Value("${application.config.accounts.savings.maxMonthlyMovementsNoFee}")
     private Integer savingsMaxMonthlyMovementsNoFee;
 
-    @Value("${account.config.savings.transactionCommissionFeePercentage}")
+    @Value("${application.config.accounts.savings.transactionCommissionFeePercentage}")
     private BigDecimal savingsTransactionCommissionFeePercentage;
 
     @Autowired

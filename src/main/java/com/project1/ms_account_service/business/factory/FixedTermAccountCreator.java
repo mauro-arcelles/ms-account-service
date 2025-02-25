@@ -14,16 +14,16 @@ import java.util.stream.Collectors;
 @Component
 public class FixedTermAccountCreator implements AccountCreator {
 
-    @Value("${account.config.fixedterm.maxMonthlyMovements}")
+    @Value("${application.config.accounts.fixedterm.maxMonthlyMovements}")
     private Integer fixedTermMaxMonthlyMovements;
 
-    @Value("${account.config.fixedterm.availableDayForMovements}")
+    @Value("${application.config.accounts.fixedterm.availableDayForMovements}")
     private Integer availableDayForMovements;
 
-    @Value("${account.config.fixedterm.maxMonthlyMovementsNoFee}")
+    @Value("${application.config.accounts.fixedterm.maxMonthlyMovementsNoFee}")
     private Integer fixedTermMaxMonthlyMovementsNoFee;
 
-    @Value("${account.config.fixedterm.transactionCommissionFeePercentage}")
+    @Value("${application.config.accounts.fixedterm.transactionCommissionFeePercentage}")
     private BigDecimal fixedTermTransactionCommissionFeePercentage;
 
     @Autowired

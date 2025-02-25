@@ -14,13 +14,13 @@ import java.util.stream.Collectors;
 @Component
 public class CheckingAccountCreator implements AccountCreator {
 
-    @Value("${account.config.checking.maintenanceFee}")
+    @Value("${application.config.accounts.checking.maintenanceFee}")
     private BigDecimal checkingAccountMaintenanceFee;
 
-    @Value("${account.config.checking.maxMonthlyMovementsNoFee}")
+    @Value("${application.config.accounts.checking.maxMonthlyMovementsNoFee}")
     private Integer checkingMaxMonthlyMovementsNoFee;
 
-    @Value("${account.config.checking.transactionCommissionFeePercentage}")
+    @Value("${application.config.accounts.checking.transactionCommissionFeePercentage}")
     private BigDecimal checkingTransactionCommissionFeePercentage;
 
     @Autowired
