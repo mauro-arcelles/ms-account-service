@@ -8,6 +8,7 @@ import com.project1.ms_account_service.model.ResponseBase;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono;
 import java.util.concurrent.TimeoutException;
 
 @Service
+@Slf4j
 public class CustomerServiceImpl implements CustomerService {
 
     @Autowired
@@ -48,18 +50,22 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private Mono<CustomerResponse> getCustomerByIdFallback(String id, InternalServerErrorException e) {
+        log.error("error", e);
         return Mono.error(new BadRequestException("Customer service unavailable. Retry again later"));
     }
 
     private Mono<CustomerResponse> getCustomerByIdFallback(String id, TimeoutException e) {
+        log.error("error", e);
         return Mono.error(new BadRequestException("Customer service unavailable. Retry again later"));
     }
 
     private Mono<CustomerResponse> getCustomerByIdFallback(String id, CallNotPermittedException e) {
+        log.error("error", e);
         return Mono.error(new BadRequestException("Customer service unavailable. Retry again later"));
     }
 
     private Mono<CustomerResponse> getCustomerByIdFallback(String id, WebClientRequestException e) {
+        log.error("error", e);
         return Mono.error(new BadRequestException("Customer service unavailable. Retry again later"));
     }
 }
