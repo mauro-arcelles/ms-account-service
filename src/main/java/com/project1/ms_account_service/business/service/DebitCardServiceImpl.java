@@ -1,5 +1,6 @@
 package com.project1.ms_account_service.business.service;
 
+import com.project1.ms_account_service.business.adapter.CreditCardService;
 import com.project1.ms_account_service.business.mapper.DebitCardMapper;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.NotFoundException;
@@ -29,6 +30,9 @@ public class DebitCardServiceImpl implements DebitCardService {
     @Autowired
     private AccountService accountService;
 
+    @Autowired
+    private CreditCardService creditCardService;
+
     @Override
     public Mono<DebitCardCreationResponse> createDebitCard(Mono<DebitCardCreationRequest> request) {
         return request.flatMap(req ->
@@ -38,6 +42,10 @@ public class DebitCardServiceImpl implements DebitCardService {
                         debitCardCreationEntity.setCustomerId(accountResponse.getCustomerId());
                         return debitCardCreationEntity;
                     })
+            )
+            .flatMap(debitCard ->
+                creditCardService.customerHasCreditDebts(debitCard.getCustomerId())
+                    .thenReturn(debitCard)
             )
             .flatMap(debitCardRepository::save)
             .map(debitCardMapper::getDebitCardCreationResponse);

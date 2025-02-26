@@ -1,5 +1,6 @@
 package com.project1.ms_account_service.business.service;
 
+import com.project1.ms_account_service.business.adapter.CreditCardService;
 import com.project1.ms_account_service.business.mapper.DebitCardMapper;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.NotFoundException;
@@ -31,6 +32,9 @@ public class DebitCardServiceImplTest {
     @MockBean
     private AccountService accountService;
 
+    @MockBean
+    private CreditCardService creditCardService;
+
     @Autowired
     private DebitCardServiceImpl debitCardService;
 
@@ -49,6 +53,7 @@ public class DebitCardServiceImplTest {
         when(debitCardMapper.getDebitCardCreationEntity(request)).thenReturn(debitCard);
         when(debitCardRepository.save(any())).thenReturn(Mono.just(debitCard));
         when(debitCardMapper.getDebitCardCreationResponse(debitCard)).thenReturn(response);
+        when(creditCardService.customerHasCreditDebts("456")).thenReturn(Mono.just(false));
 
         StepVerifier.create(debitCardService.createDebitCard(Mono.just(request)))
             .expectNext(response)

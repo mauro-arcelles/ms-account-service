@@ -79,6 +79,7 @@ public class AccountServiceImplTest {
         when(accountRepository.findByCustomerId("123")).thenReturn(Flux.empty());
         when(accountRepository.save(any())).thenReturn(Mono.just(account));
         when(accountMapper.getAccountResponse(account)).thenReturn(response);
+        when(creditCardService.customerHasCreditDebts("123")).thenReturn(Mono.just(false));
 
         StepVerifier.create(accountService.createAccount(Mono.just(request)))
             .expectNext(response)
@@ -147,6 +148,7 @@ public class AccountServiceImplTest {
         customer.setStatus(CustomerStatus.ACTIVE.toString());
 
         when(customerService.getCustomerById("123")).thenReturn(Mono.just(customer));
+        when(creditCardService.customerHasCreditDebts("123")).thenReturn(Mono.just(false));
 
         StepVerifier.create(accountService.createAccount(Mono.just(request)))
             .expectErrorMatches(throwable -> throwable instanceof BadRequestException)
@@ -172,6 +174,7 @@ public class AccountServiceImplTest {
 
         when(customerService.getCustomerById("123")).thenReturn(Mono.just(customer));
         when(accountRepository.findByCustomerId("123")).thenReturn(Flux.empty());
+        when(creditCardService.customerHasCreditDebts("123")).thenReturn(Mono.just(false));
 
         StepVerifier.create(accountService.createAccount(Mono.just(request)))
             .expectErrorMatches(throwable ->
@@ -198,6 +201,7 @@ public class AccountServiceImplTest {
 
         when(customerService.getCustomerById("123")).thenReturn(Mono.just(customer));
         when(accountRepository.findByCustomerId("123")).thenReturn(Flux.empty());
+        when(creditCardService.customerHasCreditDebts("123")).thenReturn(Mono.just(false));
 
         StepVerifier.create(accountService.createAccount(Mono.just(request)))
             .expectErrorMatches(throwable -> throwable instanceof BadRequestException)
@@ -396,6 +400,7 @@ public class AccountServiceImplTest {
         when(accountRepository.save(any())).thenReturn(Mono.just(account));
         when(accountMapper.getAccountResponse(account)).thenReturn(response);
         when(creditCardService.getCustomerCreditCards("123")).thenReturn(creditCardResponseFlux);
+        when(creditCardService.customerHasCreditDebts("123")).thenReturn(Mono.just(false));
 
         StepVerifier.create(accountService.createAccount(Mono.just(request)))
             .expectNext(response)
@@ -571,6 +576,7 @@ public class AccountServiceImplTest {
         when(accountRepository.save(any())).thenReturn(Mono.just(account));
         when(accountMapper.getAccountResponse(account)).thenReturn(response);
         when(creditCardService.getCustomerCreditCards("123")).thenReturn(creditCardResponseFlux);
+        when(creditCardService.customerHasCreditDebts("123")).thenReturn(Mono.just(false));
 
         StepVerifier.create(accountService.createAccount(Mono.just(request)))
             .expectNext(response)
