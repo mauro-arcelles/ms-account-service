@@ -479,3 +479,20 @@ components:
       properties:
         balance:
           type: number
+
+    CreditDebtsResponse:
+      type: object
+      properties:
+        debts:
+          type: object
+          properties:
+            credits:
+              type: array
+              items:
+                type: string
+            credit-cards:
+              type: array
+              items:
+                type: string
+        message:
+          type: string

@@ -41,18 +41,14 @@ public class AccountServiceImpl implements AccountService {
         return request
             .flatMap(this::validateAccountType)
             .flatMap(this::validateCustomerAccountLimits)
-            .flatMap(tuple -> {
-                CustomerResponse customerResponse = tuple.getT1();
-                AccountRequest accountRequest = tuple.getT2();
-                CustomerType customerType = CustomerType.valueOf(customerResponse.getType());
-                return this.validateBusinessAccountMembers(accountRequest, customerResponse)
-                    .map(ar -> this.accountFactory.getAccount(accountRequest, customerType));
-            })
+            .flatMap(tuple -> this.validateAccountMembers(tuple.getT2(), tuple.getT1())
+                .then(creditCardService.customerHasCreditDebts(tuple.getT1().getId()))
+                .map(__ -> accountFactory.getAccount(tuple.getT2(), CustomerType.valueOf(tuple.getT1().getType()))))
             .flatMap(accountRepository::save)
             .map(accountMapper::getAccountResponse);
     }
 
-    private Mono<AccountRequest> validateBusinessAccountMembers(AccountRequest request, CustomerResponse customerResponse) {
+    private Mono<AccountRequest> validateAccountMembers(AccountRequest request, CustomerResponse customerResponse) {
         CustomerType customerType = CustomerType.valueOf(customerResponse.getType());
         if (customerType == CustomerType.BUSINESS) {
             if (request.getHolders().isEmpty()) {
