@@ -4,10 +4,7 @@ import com.project1.ms_account_service.business.adapter.CreditCardService;
 import com.project1.ms_account_service.business.mapper.DebitCardMapper;
 import com.project1.ms_account_service.exception.BadRequestException;
 import com.project1.ms_account_service.exception.NotFoundException;
-import com.project1.ms_account_service.model.DebitCardBalanceResponse;
-import com.project1.ms_account_service.model.DebitCardCreationRequest;
-import com.project1.ms_account_service.model.DebitCardCreationResponse;
-import com.project1.ms_account_service.model.DebitCardResponse;
+import com.project1.ms_account_service.model.*;
 import com.project1.ms_account_service.model.entity.DebitCard;
 import com.project1.ms_account_service.model.entity.DebitCardAssociation;
 import com.project1.ms_account_service.repository.DebitCardRepository;
@@ -15,8 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DebitCardServiceImpl implements DebitCardService {
@@ -44,11 +43,31 @@ public class DebitCardServiceImpl implements DebitCardService {
                     })
             )
             .flatMap(debitCard ->
-                creditCardService.customerHasCreditDebts(debitCard.getCustomerId())
+                customerHasCreditDebts(debitCard.getCustomerId())
                     .thenReturn(debitCard)
             )
             .flatMap(debitCardRepository::save)
             .map(debitCardMapper::getDebitCardCreationResponse);
+    }
+
+    public Mono<Boolean> customerHasCreditDebts(String customerId) {
+        return creditCardService.getCreditDebtsByCustomerId(customerId)
+            .flatMap(creditDebtsResponse -> {
+                List<String> credits = Optional.ofNullable(creditDebtsResponse)
+                    .map(CreditDebtsResponse::getDebts)
+                    .map(CreditDebtsResponseDebts::getCredits)
+                    .orElse(Collections.emptyList());
+                List<String> creditCards = Optional.ofNullable(creditDebtsResponse)
+                    .map(CreditDebtsResponse::getDebts)
+                    .map(CreditDebtsResponseDebts::getCreditCards)
+                    .orElse(Collections.emptyList());
+
+                if (!credits.isEmpty() || !creditCards.isEmpty()) {
+                    return Mono.error(new BadRequestException(creditDebtsResponse.getMessage()));
+                }
+
+                return Mono.just(false);
+            });
     }
 
     @Override

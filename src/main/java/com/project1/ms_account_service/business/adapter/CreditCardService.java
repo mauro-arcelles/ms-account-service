@@ -10,5 +10,5 @@ public interface CreditCardService {
 
     Mono<CreditDebtsResponse> getCreditDebtsByCustomerId(String customerId);
 
-    Mono<Boolean> customerHasCreditDebts(String customerId);
+//    Mono<Boolean> customerHasCreditDebts(String customerId);
 }

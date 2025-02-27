@@ -12,13 +12,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 
 @Service
@@ -74,27 +71,6 @@ public class CreditCardServiceImpl implements CreditCardService {
             .bodyToMono(CreditDebtsResponse.class);
     }
 
-    @Override
-    public Mono<Boolean> customerHasCreditDebts(String customerId) {
-        return getCreditDebtsByCustomerId(customerId)
-            .flatMap(creditDebtsResponse -> {
-                List<String> credits = Optional.ofNullable(creditDebtsResponse)
-                    .map(CreditDebtsResponse::getDebts)
-                    .map(CreditDebtsResponseDebts::getCredits)
-                    .orElse(Collections.emptyList());
-                List<String> creditCards = Optional.ofNullable(creditDebtsResponse)
-                    .map(CreditDebtsResponse::getDebts)
-                    .map(CreditDebtsResponseDebts::getCreditCards)
-                    .orElse(Collections.emptyList());
-
-                if (!credits.isEmpty() || !creditCards.isEmpty()) {
-                    return Mono.error(new BadRequestException(creditDebtsResponse.getMessage()));
-                }
-
-                return Mono.just(false);
-            });
-    }
-
     // getCustomerCreditCardsFallback
     private Flux<CreditCardResponse> getCustomerCreditCardsFallback(String id, InternalServerErrorException e) {
         return Flux.error(new BadRequestException(CREDIT_SERVICE_UNAVAILABLE_MESSAGE));
@@ -108,7 +84,7 @@ public class CreditCardServiceImpl implements CreditCardService {
         return Flux.error(new BadRequestException(CREDIT_SERVICE_UNAVAILABLE_MESSAGE));
     }
 
-    private Flux<CreditCardResponse> getCustomerCreditCardsFallback(String id, WebClientRequestException e) {
+    private Flux<CreditCardResponse> getCustomerCreditCardsFallback(String id, WebClientException e) {
         return Flux.error(new BadRequestException(CREDIT_SERVICE_UNAVAILABLE_MESSAGE));
     }
 
@@ -125,7 +101,7 @@ public class CreditCardServiceImpl implements CreditCardService {
         return Mono.error(new BadRequestException(CREDIT_SERVICE_UNAVAILABLE_MESSAGE));
     }
 
-    private Mono<CreditDebtsResponse> getCreditDebtsByCustomerIdFallback(String customerId, WebClientRequestException e) {
+    private Mono<CreditDebtsResponse> getCreditDebtsByCustomerIdFallback(String customerId, WebClientException e) {
         return Mono.error(new BadRequestException(CREDIT_SERVICE_UNAVAILABLE_MESSAGE));
     }
 }

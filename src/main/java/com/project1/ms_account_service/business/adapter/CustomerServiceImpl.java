@@ -14,7 +14,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientException;
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.TimeoutException;
@@ -50,22 +50,18 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private Mono<CustomerResponse> getCustomerByIdFallback(String id, InternalServerErrorException e) {
-        log.error("error", e);
         return Mono.error(new BadRequestException("Customer service unavailable. Retry again later"));
     }
 
     private Mono<CustomerResponse> getCustomerByIdFallback(String id, TimeoutException e) {
-        log.error("error", e);
         return Mono.error(new BadRequestException("Customer service unavailable. Retry again later"));
     }
 
     private Mono<CustomerResponse> getCustomerByIdFallback(String id, CallNotPermittedException e) {
-        log.error("error", e);
         return Mono.error(new BadRequestException("Customer service unavailable. Retry again later"));
     }
 
-    private Mono<CustomerResponse> getCustomerByIdFallback(String id, WebClientRequestException e) {
-        log.error("error", e);
+    private Mono<CustomerResponse> getCustomerByIdFallback(String id, WebClientException e) {
         return Mono.error(new BadRequestException("Customer service unavailable. Retry again later"));
     }
 }

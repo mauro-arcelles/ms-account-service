@@ -49,11 +49,14 @@ public class DebitCardServiceImplTest {
         DebitCard debitCard = new DebitCard();
         DebitCardCreationResponse response = new DebitCardCreationResponse();
 
+        CreditDebtsResponse creditDebtsResponse = new CreditDebtsResponse();
+        creditDebtsResponse.setDebts(new CreditDebtsResponseDebts());
+
         when(accountService.getAccountById("123")).thenReturn(Mono.just(accountResponse));
         when(debitCardMapper.getDebitCardCreationEntity(request)).thenReturn(debitCard);
         when(debitCardRepository.save(any())).thenReturn(Mono.just(debitCard));
         when(debitCardMapper.getDebitCardCreationResponse(debitCard)).thenReturn(response);
-        when(creditCardService.customerHasCreditDebts("456")).thenReturn(Mono.just(false));
+        when(creditCardService.getCreditDebtsByCustomerId("456")).thenReturn(Mono.just(creditDebtsResponse));
 
         StepVerifier.create(debitCardService.createDebitCard(Mono.just(request)))
             .expectNext(response)

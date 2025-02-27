@@ -18,6 +18,10 @@ import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @Slf4j
 public class AccountServiceImpl implements AccountService {
@@ -42,10 +46,30 @@ public class AccountServiceImpl implements AccountService {
             .flatMap(this::validateAccountType)
             .flatMap(this::validateCustomerAccountLimits)
             .flatMap(tuple -> this.validateAccountMembers(tuple.getT2(), tuple.getT1())
-                .then(creditCardService.customerHasCreditDebts(tuple.getT1().getId()))
+                .then(customerHasCreditDebts(tuple.getT1().getId()))
                 .map(__ -> accountFactory.getAccount(tuple.getT2(), CustomerType.valueOf(tuple.getT1().getType()))))
             .flatMap(accountRepository::save)
             .map(accountMapper::getAccountResponse);
+    }
+
+    public Mono<Boolean> customerHasCreditDebts(String customerId) {
+        return creditCardService.getCreditDebtsByCustomerId(customerId)
+            .flatMap(creditDebtsResponse -> {
+                List<String> credits = Optional.ofNullable(creditDebtsResponse)
+                    .map(CreditDebtsResponse::getDebts)
+                    .map(CreditDebtsResponseDebts::getCredits)
+                    .orElse(Collections.emptyList());
+                List<String> creditCards = Optional.ofNullable(creditDebtsResponse)
+                    .map(CreditDebtsResponse::getDebts)
+                    .map(CreditDebtsResponseDebts::getCreditCards)
+                    .orElse(Collections.emptyList());
+
+                if (!credits.isEmpty() || !creditCards.isEmpty()) {
+                    return Mono.error(new BadRequestException(creditDebtsResponse.getMessage()));
+                }
+
+                return Mono.just(false);
+            });
     }
 
     private Mono<AccountRequest> validateAccountMembers(AccountRequest request, CustomerResponse customerResponse) {
