@@ -9,6 +9,4 @@ public interface CreditCardService {
     Flux<CreditCardResponse> getCustomerCreditCards(String customerId);
 
     Mono<CreditDebtsResponse> getCreditDebtsByCustomerId(String customerId);
-
-//    Mono<Boolean> customerHasCreditDebts(String customerId);
 }
