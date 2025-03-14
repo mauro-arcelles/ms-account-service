@@ -105,5 +105,6 @@ springdoc:
 ## Swagger
 http://localhost:8091/swagger-ui.html
 
-![ms-account-service-2025-03-14-152653](https://github.com/user-attachments/assets/954954f9-4f27-4141-a830-94bf6e6938c0)
+![ms-credit-service-2025-03-14-155304](https://github.com/user-attachments/assets/68d399c9-3c75-4c89-ac46-1e18e49765df)
+
 
