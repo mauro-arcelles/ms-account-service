@@ -54,4 +54,5 @@ application:
 ## Swagger
 http://localhost:8091/swagger-ui.html
 
-![ms-account-service-2025-02-11-225336](https://github.com/user-attachments/assets/11b80cab-6f90-499b-848f-42f072391057)
+![ms-account-service-2025-03-14-152653](https://github.com/user-attachments/assets/954954f9-4f27-4141-a830-94bf6e6938c0)
+
